@@ -82,15 +82,14 @@ type DerivationPipeline struct {
 
 // NewDerivationPipeline creates a derivation pipeline, which should be reset before use.
 func NewDerivationPipeline(log log.Logger, cfg *rollup.Config, l1Fetcher L1Fetcher, engine Engine, metrics Metrics, syncCfg *sync.Config) *DerivationPipeline {
-
 	// Pull stages
 	l1Traversal := NewL1Traversal(log, cfg, l1Fetcher)
+	// TODO: Create a data source factory for cosmos app (this should technically be pulling from DA source)
 	dataSrc := NewDataSourceFactory(log, cfg, l1Fetcher) // auxiliary stage for L1Retrieval
 	l1Src := NewL1Retrieval(log, dataSrc, l1Traversal)
-	frameQueue := NewFrameQueue(log, l1Src)
-	bank := NewChannelBank(log, cfg, frameQueue, l1Fetcher, metrics)
-	chInReader := NewChannelInReader(cfg, log, bank, metrics)
-	batchQueue := NewBatchQueue(log, cfg, chInReader)
+	// TODO: Impl a batch provider for cosmos app tx
+	batchProvider := NewBatchProvider(cfg, l1Src, log, metrics)
+	batchQueue := NewBatchQueue(log, cfg, batchProvider)
 	attrBuilder := NewFetchingAttributesBuilder(cfg, l1Fetcher, engine)
 	attributesQueue := NewAttributesQueue(log, cfg, attrBuilder, batchQueue)
 
@@ -100,7 +99,7 @@ func NewDerivationPipeline(log log.Logger, cfg *rollup.Config, l1Fetcher L1Fetch
 	// Reset from engine queue then up from L1 Traversal. The stages do not talk to each other during
 	// the reset, but after the engine queue, this is the order in which the stages could talk to each other.
 	// Note: The engine queue stage is the only reset that can fail.
-	stages := []ResettableStage{eng, l1Traversal, l1Src, frameQueue, bank, chInReader, batchQueue, attributesQueue}
+	stages := []ResettableStage{eng, l1Traversal, l1Src, batchQueue, attributesQueue}
 
 	return &DerivationPipeline{
 		log:       log,
