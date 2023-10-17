@@ -2,6 +2,7 @@ package derive
 
 import (
 	"crypto/ecdsa"
+	"github.com/ethereum-optimism/optimism/op-service/txmgr"
 	"math/big"
 	"math/rand"
 	"testing"
@@ -60,6 +61,7 @@ func TestDataFromEVMTransactions(t *testing.T) {
 		BatchInboxAddress: crypto.PubkeyToAddress(inboxPriv.PublicKey),
 	}
 	batcherAddr := crypto.PubkeyToAddress(batcherPriv.PublicKey)
+	daClient := txmgr.NewDaClient("")
 
 	altInbox := testutils.RandomAddress(rand.New(rand.NewSource(1234)))
 	altAuthor := testutils.RandomKey()
@@ -121,7 +123,7 @@ func TestDataFromEVMTransactions(t *testing.T) {
 			}
 		}
 
-		out := DataFromEVMTransactions(cfg, batcherAddr, txs, testlog.Logger(t, log.LvlCrit))
+		out := DataFromEVMTransactions(cfg, daClient, batcherAddr, txs, testlog.Logger(t, log.LvlCrit))
 		require.ElementsMatch(t, expectedData, out)
 	}
 

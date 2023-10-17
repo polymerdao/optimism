@@ -109,6 +109,7 @@ type SimpleTxManager struct {
 // DaClient is an interface to submit data to the DA layer
 type DaClient interface {
 	SubmitData(data []byte) ([]byte, error)
+	FetchData(data []byte) ([]byte, error)
 }
 
 type EthereumDaClient struct {
@@ -122,7 +123,15 @@ func (e *EthereumDaClient) SubmitData(data []byte) ([]byte, error) {
 	return data, nil
 }
 
+func (e *EthereumDaClient) FetchData(data []byte) ([]byte, error) {
+	return []byte{}, nil
+}
+
 func (e *EigenDaClient) SubmitData(data []byte) ([]byte, error) {
+	panic("implement me")
+}
+
+func (e *EigenDaClient) FetchData(data []byte) ([]byte, error) {
 	panic("implement me")
 }
 
@@ -138,16 +147,21 @@ func NewDaTxManager(name string, l log.Logger, m metrics.TxMetricer, cfg CLIConf
 		return nil, err
 	}
 
-	var client DaClient
-	if cfg.DaRpc == "" {
-		client = &EthereumDaClient{}
-	} else {
-		client = &EigenDaClient{rpc: cfg.DaRpc}
-	}
+	client := NewDaClient(cfg.DaRpc)
 	return &DaTxManager{
 		SimpleTxManager: manager,
 		daClient:        &client,
 	}, nil
+}
+
+func NewDaClient(rpc string) DaClient {
+	var client DaClient
+	if rpc == "" {
+		client = &EthereumDaClient{}
+	} else {
+		client = &EigenDaClient{rpc: rpc}
+	}
+	return client
 }
 
 // NewSimpleTxManager initializes a new SimpleTxManager with the passed Config.
