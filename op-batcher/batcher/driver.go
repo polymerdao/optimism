@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-service/sources"
 	"io"
 	"math/big"
 	_ "net/http/pprof"
@@ -55,9 +56,9 @@ func NewBatchSubmitterFromCLIConfig(cfg CLIConfig, l log.Logger, m metrics.Metri
 		return nil, err
 	}
 
-	l2Client, err := dial.DialEthClientWithTimeout(dial.DefaultDialTimeout, l, cfg.L2EthRpc)
+	l2Client, err := sources.NewABCIClientWithTimeout(dial.DefaultDialTimeout, cfg.L2EthRpc)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to create an abci client: %w", err)
 	}
 
 	rollupClient, err := dial.DialRollupClientWithTimeout(dial.DefaultDialTimeout, l, cfg.RollupRpc)
