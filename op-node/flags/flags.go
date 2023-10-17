@@ -39,6 +39,12 @@ var (
 		Usage:   "Rollup chain parameters",
 		EnvVars: prefixEnvVars("ROLLUP_CONFIG"),
 	}
+	DaRPC = &cli.StringFlag{
+		Name:    "da-rpc",
+		Usage:   "Data Availability RPC",
+		Value:   "http://da:26659",
+		EnvVars: prefixEnvVars("DA_RPC"),
+	}
 	Network = &cli.StringFlag{
 		Name:    "network",
 		Usage:   fmt.Sprintf("Predefined network selection. Available networks: %s", strings.Join(chaincfg.AvailableNetworks(), ", ")),
@@ -303,6 +309,7 @@ var optionalFlags = []cli.Flag{
 	RollupHalt,
 	RollupLoadProtocolVersions,
 	CanyonOverrideFlag,
+	DaRPC,
 }
 
 // Flags contains the list of configuration options available to the binary.

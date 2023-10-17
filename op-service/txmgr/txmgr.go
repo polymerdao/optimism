@@ -106,6 +106,50 @@ type SimpleTxManager struct {
 	pending atomic.Int64
 }
 
+// DaClient is an interface to submit data to the DA layer
+type DaClient interface {
+	SubmitData(data []byte) ([]byte, error)
+}
+
+type EthereumDaClient struct {
+}
+
+type EigenDaClient struct {
+	rpc string
+}
+
+func (e *EthereumDaClient) SubmitData(data []byte) ([]byte, error) {
+	return data, nil
+}
+
+func (e *EigenDaClient) SubmitData(data []byte) ([]byte, error) {
+	panic("implement me")
+}
+
+// DaTxManager is an implementation of TxManager that uses DaClient if it's set
+type DaTxManager struct {
+	*SimpleTxManager
+	daClient *DaClient
+}
+
+func NewDaTxManager(name string, l log.Logger, m metrics.TxMetricer, cfg CLIConfig) (*DaTxManager, error) {
+	manager, err := NewSimpleTxManager(name, l, m, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	var client DaClient
+	if cfg.DaRpc == "" {
+		client = &EthereumDaClient{}
+	} else {
+		client = &EigenDaClient{rpc: cfg.DaRpc}
+	}
+	return &DaTxManager{
+		SimpleTxManager: manager,
+		daClient:        &client,
+	}, nil
+}
+
 // NewSimpleTxManager initializes a new SimpleTxManager with the passed Config.
 func NewSimpleTxManager(name string, l log.Logger, m metrics.TxMetricer, cfg CLIConfig) (*SimpleTxManager, error) {
 	conf, err := NewConfig(cfg, l)
@@ -196,6 +240,29 @@ func (m *SimpleTxManager) send(ctx context.Context, candidate TxCandidate) (*typ
 		return nil, fmt.Errorf("failed to create the tx: %w", err)
 	}
 	return m.sendTx(ctx, tx)
+}
+
+func (m *DaTxManager) Send(ctx context.Context, candidate TxCandidate) (*types.Receipt, error) {
+	m.metr.RecordPendingTx(m.pending.Add(1))
+	defer func() {
+		m.metr.RecordPendingTx(m.pending.Add(-1))
+	}()
+
+	var (
+		receipt *types.Receipt
+		err     error
+	)
+
+	data, err := (*m.daClient).SubmitData(candidate.TxData)
+	if err != nil {
+		return nil, err
+	}
+	receipt, err = m.send(ctx, TxCandidate{TxData: data, To: candidate.To, GasLimit: candidate.GasLimit})
+
+	if err != nil {
+		m.resetNonce()
+	}
+	return receipt, err
 }
 
 // craftTx creates the signed transaction

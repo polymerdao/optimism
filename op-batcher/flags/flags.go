@@ -38,6 +38,12 @@ var (
 		Usage:   "HTTP provider URL for Rollup node",
 		EnvVars: prefixEnvVars("ROLLUP_RPC"),
 	}
+	DaRpcFlag = &cli.StringFlag{
+		Name:     "da-rpc",
+		Usage:    "HTTP provider URL for DA node",
+		Required: true,
+		EnvVars:  prefixEnvVars("DA_RPC"),
+	}
 	// Optional flags
 	SubSafetyMarginFlag = &cli.Uint64Flag{
 		Name: "sub-safety-margin",
@@ -94,6 +100,7 @@ var optionalFlags = []cli.Flag{
 	MaxL1TxSizeBytesFlag,
 	StoppedFlag,
 	SequencerHDPathFlag,
+	DaRpcFlag,
 }
 
 func init() {

@@ -31,6 +31,9 @@ type Config struct {
 	PollInterval           time.Duration
 	MaxPendingTransactions uint64
 
+	// DaRpc is the HTTP provider URL for the Data Availability node.
+	DaRpc string
+
 	// RollupConfig is queried at startup
 	Rollup *rollup.Config
 
@@ -81,6 +84,9 @@ type CLIConfig struct {
 	// MaxPendingTransactions is the maximum number of concurrent pending
 	// transactions sent to the transaction manager (0 == no limit).
 	MaxPendingTransactions uint64
+
+	// DaRpc is the HTTP provider URL for the Data Availability node.
+	DaRpc string
 
 	// MaxL1TxSize is the maximum size of a batch tx submitted to L1.
 	MaxL1TxSize uint64

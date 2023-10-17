@@ -70,7 +70,7 @@ func NewBatchSubmitterFromCLIConfig(cfg CLIConfig, l log.Logger, m metrics.Metri
 		return nil, fmt.Errorf("querying rollup config: %w", err)
 	}
 
-	txManager, err := txmgr.NewSimpleTxManager("batcher", l, m, cfg.TxMgrConfig)
+	txManager, err := txmgr.NewDaTxManager("batcher", l, m, cfg.TxMgrConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -79,6 +79,7 @@ func NewBatchSubmitterFromCLIConfig(cfg CLIConfig, l log.Logger, m metrics.Metri
 		L1Client:               l1Client,
 		L2Client:               l2Client,
 		RollupNode:             rollupClient,
+		DaRpc:                  cfg.DaRpc,
 		PollInterval:           cfg.PollInterval,
 		MaxPendingTransactions: cfg.MaxPendingTransactions,
 		NetworkTimeout:         cfg.TxMgrConfig.NetworkTimeout,

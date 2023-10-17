@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-service/txmgr"
 	"net"
 	"strconv"
 	"sync/atomic"
@@ -48,6 +49,7 @@ type OpNode struct {
 	p2pSigner p2p.Signer            // p2p gogssip application messages will be signed with this signer
 	tracer    Tracer                // tracer to get events for testing/debugging
 	runCfg    *RuntimeConfig        // runtime configurables
+	daClient  *txmgr.DaClient
 
 	rollupHalt string // when to halt the rollup, disabled if empty
 
