@@ -138,7 +138,7 @@ func (e *EigenDaClient) FetchData(data []byte) ([]byte, error) {
 // DaTxManager is an implementation of TxManager that uses DaClient if it's set
 type DaTxManager struct {
 	*SimpleTxManager
-	daClient *DaClient
+	daClient DaClient
 }
 
 func NewDaTxManager(name string, l log.Logger, m metrics.TxMetricer, cfg CLIConfig) (*DaTxManager, error) {
@@ -150,7 +150,7 @@ func NewDaTxManager(name string, l log.Logger, m metrics.TxMetricer, cfg CLIConf
 	client := NewDaClient(cfg.DaRpc)
 	return &DaTxManager{
 		SimpleTxManager: manager,
-		daClient:        &client,
+		daClient:        client,
 	}, nil
 }
 
@@ -267,7 +267,7 @@ func (m *DaTxManager) Send(ctx context.Context, candidate TxCandidate) (*types.R
 		err     error
 	)
 
-	data, err := (*m.daClient).SubmitData(candidate.TxData)
+	data, err := m.daClient.SubmitData(candidate.TxData)
 	if err != nil {
 		return nil, err
 	}
