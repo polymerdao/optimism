@@ -42,7 +42,7 @@ var (
 	DaRPC = &cli.StringFlag{
 		Name:    "da-rpc",
 		Usage:   "Data Availability RPC",
-		Value:   "http://da:26659",
+		Value:   "",
 		EnvVars: prefixEnvVars("DA_RPC"),
 	}
 	Network = &cli.StringFlag{
