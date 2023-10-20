@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-service/sources"
 	"io"
 	"math"
 
 	"github.com/ethereum-optimism/optimism/op-batcher/compressor"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
-	"github.com/ethereum/go-ethereum/core/types"
 )
 
 var (
@@ -116,7 +116,7 @@ type channelBuilder struct {
 	// current channel
 	co *derive.ChannelOut
 	// list of blocks in the channel. Saved in case the channel must be rebuilt
-	blocks []*types.Block
+	blocks []*sources.Block
 	// frames data queue, to be send as txs
 	frames []frameData
 	// total frames counter
@@ -164,7 +164,7 @@ func (c *channelBuilder) OutputBytes() int {
 
 // Blocks returns a backup list of all blocks that were added to the channel. It
 // can be used in case the channel needs to be rebuilt.
-func (c *channelBuilder) Blocks() []*types.Block {
+func (c *channelBuilder) Blocks() []*sources.Block {
 	return c.blocks
 }
 
@@ -189,7 +189,7 @@ func (c *channelBuilder) Reset() error {
 // first transaction for subsequent use by the caller.
 //
 // Call OutputFrames() afterwards to create frames.
-func (c *channelBuilder) AddBlock(block *types.Block) (derive.L1BlockInfo, error) {
+func (c *channelBuilder) AddBlock(block *sources.Block) (derive.L1BlockInfo, error) {
 	if c.IsFull() {
 		return derive.L1BlockInfo{}, c.FullErr()
 	}

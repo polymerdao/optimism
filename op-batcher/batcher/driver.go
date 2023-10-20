@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-service/client"
+	"github.com/ethereum-optimism/optimism/op-service/sources"
 	"io"
-	"math/big"
 	_ "net/http/pprof"
 	"sync"
 	"time"
@@ -55,10 +56,11 @@ func NewBatchSubmitterFromCLIConfig(cfg CLIConfig, l log.Logger, m metrics.Metri
 		return nil, err
 	}
 
-	l2Client, err := dial.DialEthClientWithTimeout(dial.DefaultDialTimeout, l, cfg.L2EthRpc)
+	rpc, err := client.NewRPC(ctx, l, cfg.L2EthRpc)
 	if err != nil {
 		return nil, err
 	}
+	l2Client := sources.NewPolymerClient(rpc)
 
 	rollupClient, err := dial.DialRollupClientWithTimeout(dial.DefaultDialTimeout, l, cfg.RollupRpc)
 	if err != nil {
@@ -197,7 +199,7 @@ func (l *BatchSubmitter) loadBlocksIntoState(ctx context.Context) error {
 		return errors.New("start number is >= end number")
 	}
 
-	var latestBlock *types.Block
+	var latestBlock *sources.Block
 	// Add all blocks to "state"
 	for i := start.Number + 1; i < end.Number+1; i++ {
 		block, err := l.loadBlockIntoState(ctx, i)
@@ -224,10 +226,10 @@ func (l *BatchSubmitter) loadBlocksIntoState(ctx context.Context) error {
 }
 
 // loadBlockIntoState fetches & stores a single block into `state`. It returns the block it loaded.
-func (l *BatchSubmitter) loadBlockIntoState(ctx context.Context, blockNumber uint64) (*types.Block, error) {
+func (l *BatchSubmitter) loadBlockIntoState(ctx context.Context, blockNumber uint64) (*sources.Block, error) {
 	ctx, cancel := context.WithTimeout(ctx, l.NetworkTimeout)
 	defer cancel()
-	block, err := l.L2Client.BlockByNumber(ctx, new(big.Int).SetUint64(blockNumber))
+	block, err := l.L2Client.BlockByNumber(ctx, blockNumber)
 	if err != nil {
 		return nil, fmt.Errorf("getting L2 block: %w", err)
 	}
@@ -236,7 +238,7 @@ func (l *BatchSubmitter) loadBlockIntoState(ctx context.Context, blockNumber uin
 		return nil, fmt.Errorf("adding L2 block to state: %w", err)
 	}
 
-	l.log.Info("added L2 block to local state", "block", eth.ToBlockID(block), "tx_count", len(block.Transactions()), "time", block.Time())
+	//l.log.Info("added L2 block to local state", "block", eth.ToBlockID(block), "tx_count", len(block.Transactions()), "time", block.Time())
 	return block, nil
 }
 

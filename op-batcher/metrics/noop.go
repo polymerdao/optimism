@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	opmetrics "github.com/ethereum-optimism/optimism/op-service/metrics"
+	"github.com/ethereum-optimism/optimism/op-service/sources"
 	txmetrics "github.com/ethereum-optimism/optimism/op-service/txmgr/metrics"
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -24,7 +25,7 @@ func (*noopMetrics) RecordLatestL1Block(l1ref eth.L1BlockRef)               {}
 func (*noopMetrics) RecordL2BlocksLoaded(eth.L2BlockRef)                    {}
 func (*noopMetrics) RecordChannelOpened(derive.ChannelID, int)              {}
 func (*noopMetrics) RecordL2BlocksAdded(eth.L2BlockRef, int, int, int, int) {}
-func (*noopMetrics) RecordL2BlockInPendingQueue(*types.Block)               {}
+func (*noopMetrics) RecordL2BlockInPendingQueue(*sources.Block)             {}
 func (*noopMetrics) RecordL2BlockInChannel(*types.Block)                    {}
 
 func (*noopMetrics) RecordChannelClosed(derive.ChannelID, int, int, int, int, error) {}
