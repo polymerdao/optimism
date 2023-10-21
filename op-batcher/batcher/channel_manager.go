@@ -3,7 +3,7 @@ package batcher
 import (
 	"errors"
 	"fmt"
-	"github.com/ethereum-optimism/optimism/op-service/sources"
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"io"
 	"sync"
 
@@ -30,7 +30,7 @@ type channelManager struct {
 	cfg  ChannelConfig
 
 	// All blocks since the last request for new tx data.
-	blocks []*sources.Block
+	blocks []*peptide.Block
 	// last block hash - for reorg detection
 	tip common.Hash
 
@@ -307,7 +307,7 @@ func (s *channelManager) outputFrames() error {
 // AddL2Block adds an L2 block to the internal blocks queue. It returns ErrReorg
 // if the block does not extend the last block loaded into the state. If no
 // blocks were added yet, the parent hash check is skipped.
-func (s *channelManager) AddL2Block(block *sources.Block) error {
+func (s *channelManager) AddL2Block(block *peptide.Block) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.tip != (common.Hash{}) && s.tip != block.ParentHash() {
@@ -321,7 +321,7 @@ func (s *channelManager) AddL2Block(block *sources.Block) error {
 	return nil
 }
 
-func l2BlockRefFromBlockAndL1Info(block *sources.Block, l1info derive.L1BlockInfo) eth.L2BlockRef {
+func l2BlockRefFromBlockAndL1Info(block *peptide.Block, l1info derive.L1BlockInfo) eth.L2BlockRef {
 	return eth.L2BlockRef{
 		Hash:           block.Hash(),
 		Number:         block.NumberU64(),

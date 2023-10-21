@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ethereum-optimism/optimism/op-service/client"
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"github.com/ethereum-optimism/optimism/op-service/sources"
 	"io"
 	_ "net/http/pprof"
@@ -199,7 +200,7 @@ func (l *BatchSubmitter) loadBlocksIntoState(ctx context.Context) error {
 		return errors.New("start number is >= end number")
 	}
 
-	var latestBlock *sources.Block
+	var latestBlock *peptide.Block
 	// Add all blocks to "state"
 	for i := start.Number + 1; i < end.Number+1; i++ {
 		block, err := l.loadBlockIntoState(ctx, i)
@@ -226,7 +227,7 @@ func (l *BatchSubmitter) loadBlocksIntoState(ctx context.Context) error {
 }
 
 // loadBlockIntoState fetches & stores a single block into `state`. It returns the block it loaded.
-func (l *BatchSubmitter) loadBlockIntoState(ctx context.Context, blockNumber uint64) (*sources.Block, error) {
+func (l *BatchSubmitter) loadBlockIntoState(ctx context.Context, blockNumber uint64) (*peptide.Block, error) {
 	ctx, cancel := context.WithTimeout(ctx, l.NetworkTimeout)
 	defer cancel()
 	block, err := l.L2Client.BlockByNumber(ctx, blockNumber)

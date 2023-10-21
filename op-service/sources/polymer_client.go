@@ -2,82 +2,12 @@ package sources
 
 import (
 	"context"
-	"fmt"
 	"github.com/ethereum-optimism/optimism/op-service/client"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 )
-
-type Hash []byte
-
-type Transaction struct {
-	inner []byte
-	hash  []byte
-}
-
-func (tx *Transaction) Type() uint8 {
-	return types.DynamicFeeTxType
-}
-
-func (tx *Transaction) MarshalBinary() ([]byte, error) {
-	return tx.inner, nil
-}
-
-func (tx *Transaction) Data() []byte {
-	return tx.inner
-}
-
-func (tx *Transaction) Hash() common.Hash {
-	return common.BytesToHash(tx.hash)
-}
-
-type Transactions []*Transaction
-
-func (t Transactions) Len() int {
-	return t.Len()
-}
-
-type Block struct {
-	height uint64
-	hash   Hash
-	parent Hash
-	time   uint64
-	txs    Transactions
-	data   []byte
-}
-
-func (m *Block) Height() uint64 {
-	return m.height
-}
-
-func (m *Block) NumberU64() uint64 {
-	return m.height
-}
-
-func (m *Block) Bytes() []byte {
-	return []byte(fmt.Sprintf("%v %v %v", m.hash, m.parent, m.height))
-}
-
-func (m *Block) Hash() common.Hash {
-	return common.BytesToHash(m.hash)
-
-}
-
-func (m *Block) ParentHash() common.Hash {
-	return common.BytesToHash(m.parent)
-}
-
-func (m *Block) Time() uint64 {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (m *Block) Transactions() Transactions {
-	//TODO implement me
-	panic("implement me")
-}
 
 // PolymerClient is a L2ClientGeneric implementation that interacts with the Polymer's ABCI app as an L2 Execution
 // Engine via RPC bindings.
@@ -131,8 +61,8 @@ func (p *PolymerClient) ChainID(ctx context.Context) (*big.Int, error) {
 	return chainID, err
 }
 
-func (p *PolymerClient) BlockByNumber(ctx context.Context, number uint64) (*Block, error) {
-	var block *Block
+func (p *PolymerClient) BlockByNumber(ctx context.Context, number uint64) (*peptide.Block, error) {
+	var block *peptide.Block
 	err := p.client.CallContext(ctx, block, "peptide_getBlockByNumber", number)
 	return block, err
 }
