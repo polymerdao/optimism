@@ -1,80 +1,83 @@
 package peptide
 
 import (
-	"fmt"
+	"crypto/sha256"
+	"encoding/json"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	bfttypes "github.com/cometbft/cometbft/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	"math/big"
 )
 
+type Data = hexutil.Bytes
+type Hash = common.Hash
+
 type Block struct {
-	height uint64
-	hash   Hash
-	parent Hash
-	time   uint64
-	txs    Transactions
-	data   []byte
+	Txs             []bfttypes.Tx   `json:"txs"`
+	Header          *tmproto.Header `json:"header"`
+	ParentBlockHash Hash            `json:"parentHash"`
+	L1Txs           []Data          `json:"l1Txs"`
 }
 
-func (m *Block) Height() uint64 {
-	return m.height
+func (b *Block) Height() int64 {
+	return b.Header.Height
 }
 
-func (m *Block) NumberU64() uint64 {
-	return m.height
+func (b *Block) Bytes() []byte {
+	bytes, err := json.Marshal(b)
+	if err != nil {
+		panic(err)
+	}
+	return bytes
 }
 
-func (m *Block) Bytes() []byte {
-	return []byte(fmt.Sprintf("%v %v %v", m.hash, m.parent, m.height))
+// Hash returns a unique hash of the block, used as the block identifier
+func (b *Block) Hash() Hash {
+	data := append(b.Bytes(), b.ParentBlockHash[:]...)
+	hash := sha256.Sum256(data)
+	return hash
 }
 
-func (m *Block) Hash() common.Hash {
-	return common.BytesToHash(m.hash)
-
+func (b *Block) ParentHash() Hash {
+	return b.ParentBlockHash
 }
 
-func (m *Block) ParentHash() common.Hash {
-	return common.BytesToHash(m.parent)
+func (b *Block) NumberU64() uint64 {
+	return uint64(b.Height())
 }
 
-func (m *Block) Time() uint64 {
-	//TODO implement me
-	panic("implement me")
+func (b *Block) Time() uint64 {
+	return uint64(b.Header.Time.Second())
 }
 
-func (m *Block) Transactions() Transactions {
-	//TODO implement me
-	panic("implement me")
+func (b *Block) Transactions() Transactions {
+	txs := make(Transactions, len(b.L1Txs))
+	for _, l1tx := range b.L1Txs {
+		var tx types.Transaction
+		if err := tx.UnmarshalBinary(l1tx); err != nil {
+			panic("failed to unmarshal l2 txs")
+		}
+		txs = append(txs, &tx)
+	}
+	for _, l2tx := range b.Txs {
+		//TODO: update to proper tx data values if possible
+		txData := &types.DynamicFeeTx{
+			ChainID: big.NewInt(int64(0)),
+			Data:    l2tx,
+			Gas:     0,
+			Value:   big.NewInt(0),
+			To:      nil,
+		}
+		tx := types.NewTx(txData)
+		txs = append(txs, tx)
+	}
+	return txs
 }
 
-type Transactions []*Transaction
+type Transactions []*types.Transaction
 
 func (t Transactions) Len() int {
 	return t.Len()
-}
-
-type Hash []byte
-
-type Transaction struct {
-	inner []byte
-	hash  []byte
-}
-
-func (tx *Transaction) Type() uint8 {
-	return types.DynamicFeeTxType
-}
-
-func (tx *Transaction) MarshalBinary() ([]byte, error) {
-	return tx.inner, nil
-}
-
-func (tx *Transaction) Data() []byte {
-	return tx.inner
-}
-
-func (tx *Transaction) Len() int {
-	return len(tx.inner)
-}
-
-func (tx *Transaction) Hash() common.Hash {
-	return common.BytesToHash(tx.hash)
 }

@@ -63,7 +63,7 @@ func (p *PolymerClient) ChainID(ctx context.Context) (*big.Int, error) {
 
 func (p *PolymerClient) BlockByNumber(ctx context.Context, number uint64) (*peptide.Block, error) {
 	var block *peptide.Block
-	err := p.client.CallContext(ctx, block, "peptide_getBlockByNumber", number)
+	err := p.client.CallContext(ctx, block, "ee_getBlockByNumber", number)
 	return block, err
 }
 

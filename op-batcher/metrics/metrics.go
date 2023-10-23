@@ -301,11 +301,11 @@ func estimateBatchSize(block *peptide.Block) uint64 {
 	size := uint64(70) // estimated overhead of batch metadata
 	for _, tx := range block.Transactions() {
 		// Don't include deposit transactions in the batch.
-		//if tx.IsDepositTx() {
-		//	continue
-		//}
+		if tx.IsDepositTx() {
+			continue
+		}
 		// Add 2 for the overhead of encoding the tx bytes in a RLP list
-		size += uint64(tx.Len()) + 2
+		size += tx.Size() + 2
 	}
 	return size
 }
