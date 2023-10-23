@@ -116,7 +116,7 @@ type channelBuilder struct {
 	// current channel
 	co *derive.ChannelOut
 	// list of blocks in the channel. Saved in case the channel must be rebuilt
-	blocks []*peptide.Block
+	blocks []peptide.EthBlock
 	// frames data queue, to be send as txs
 	frames []frameData
 	// total frames counter
@@ -164,7 +164,7 @@ func (c *channelBuilder) OutputBytes() int {
 
 // Blocks returns a backup list of all blocks that were added to the channel. It
 // can be used in case the channel needs to be rebuilt.
-func (c *channelBuilder) Blocks() []*peptide.Block {
+func (c *channelBuilder) Blocks() []peptide.EthBlock {
 	return c.blocks
 }
 
@@ -189,7 +189,7 @@ func (c *channelBuilder) Reset() error {
 // first transaction for subsequent use by the caller.
 //
 // Call OutputFrames() afterwards to create frames.
-func (c *channelBuilder) AddBlock(block *peptide.Block) (derive.L1BlockInfo, error) {
+func (c *channelBuilder) AddBlock(block peptide.EthBlock) (derive.L1BlockInfo, error) {
 	if c.IsFull() {
 		return derive.L1BlockInfo{}, c.FullErr()
 	}

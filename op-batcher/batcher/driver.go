@@ -200,7 +200,7 @@ func (l *BatchSubmitter) loadBlocksIntoState(ctx context.Context) error {
 		return errors.New("start number is >= end number")
 	}
 
-	var latestBlock *peptide.Block
+	var latestBlock peptide.EthBlock
 	// Add all blocks to "state"
 	for i := start.Number + 1; i < end.Number+1; i++ {
 		block, err := l.loadBlockIntoState(ctx, i)
@@ -227,7 +227,7 @@ func (l *BatchSubmitter) loadBlocksIntoState(ctx context.Context) error {
 }
 
 // loadBlockIntoState fetches & stores a single block into `state`. It returns the block it loaded.
-func (l *BatchSubmitter) loadBlockIntoState(ctx context.Context, blockNumber uint64) (*peptide.Block, error) {
+func (l *BatchSubmitter) loadBlockIntoState(ctx context.Context, blockNumber uint64) (peptide.EthBlock, error) {
 	ctx, cancel := context.WithTimeout(ctx, l.NetworkTimeout)
 	defer cancel()
 	block, err := l.L2Client.BlockByNumber(ctx, blockNumber)
@@ -239,7 +239,7 @@ func (l *BatchSubmitter) loadBlockIntoState(ctx context.Context, blockNumber uin
 		return nil, fmt.Errorf("adding L2 block to state: %w", err)
 	}
 
-	//l.log.Info("added L2 block to local state", "block", eth.ToBlockID(block), "tx_count", len(block.Transactions()), "time", block.Time())
+	l.log.Info("added L2 block to local state", "block", eth.ToBlockID(block), "tx_count", len(block.Transactions()), "time", block.Time())
 	return block, nil
 }
 

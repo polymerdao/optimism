@@ -24,8 +24,8 @@ func (*noopMetrics) RecordLatestL1Block(l1ref eth.L1BlockRef)               {}
 func (*noopMetrics) RecordL2BlocksLoaded(eth.L2BlockRef)                    {}
 func (*noopMetrics) RecordChannelOpened(derive.ChannelID, int)              {}
 func (*noopMetrics) RecordL2BlocksAdded(eth.L2BlockRef, int, int, int, int) {}
-func (*noopMetrics) RecordL2BlockInPendingQueue(*peptide.Block)             {}
-func (*noopMetrics) RecordL2BlockInChannel(*peptide.Block)                  {}
+func (*noopMetrics) RecordL2BlockInPendingQueue(peptide.EthBlock)           {}
+func (*noopMetrics) RecordL2BlockInChannel(peptide.EthBlock)                {}
 
 func (*noopMetrics) RecordChannelClosed(derive.ChannelID, int, int, int, int, error) {}
 

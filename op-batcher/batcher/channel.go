@@ -62,7 +62,7 @@ func (s *channel) TxFailed(id txID) {
 // a channel have been marked as confirmed on L1 the channel may be invalid & need to be
 // resubmitted.
 // This function may reset the pending channel if the pending channel has timed out.
-func (s *channel) TxConfirmed(id txID, inclusionBlock eth.BlockID) (bool, []*peptide.Block) {
+func (s *channel) TxConfirmed(id txID, inclusionBlock eth.BlockID) (bool, []peptide.EthBlock) {
 	s.metr.RecordBatchTxSubmitted()
 	s.log.Debug("marked transaction as confirmed", "id", id, "block", inclusionBlock)
 	if _, ok := s.pendingTransactions[id]; !ok {
@@ -154,7 +154,7 @@ func (s *channel) RegisterL1Block(l1BlockNum uint64) {
 	s.channelBuilder.RegisterL1Block(l1BlockNum)
 }
 
-func (s *channel) AddBlock(block *peptide.Block) (derive.L1BlockInfo, error) {
+func (s *channel) AddBlock(block peptide.EthBlock) (derive.L1BlockInfo, error) {
 	return s.channelBuilder.AddBlock(block)
 }
 

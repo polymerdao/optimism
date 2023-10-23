@@ -21,6 +21,20 @@ type Block struct {
 	L1Txs           []Data          `json:"l1Txs"`
 }
 
+type EthBlock interface {
+	Hash() Hash
+	ParentHash() Hash
+	NumberU64() uint64
+	Transactions() types.Transactions
+	Time() uint64
+}
+
+type BlockData interface {
+	EthBlock
+	Height() uint64
+	Bytes() []byte
+}
+
 func (b *Block) Height() int64 {
 	return b.Header.Height
 }
@@ -52,8 +66,8 @@ func (b *Block) Time() uint64 {
 	return uint64(b.Header.Time.Second())
 }
 
-func (b *Block) Transactions() Transactions {
-	txs := make(Transactions, len(b.L1Txs))
+func (b *Block) Transactions() types.Transactions {
+	txs := make(types.Transactions, len(b.L1Txs))
 	for _, l1tx := range b.L1Txs {
 		var tx types.Transaction
 		if err := tx.UnmarshalBinary(l1tx); err != nil {
@@ -76,8 +90,8 @@ func (b *Block) Transactions() Transactions {
 	return txs
 }
 
-type Transactions []*types.Transaction
-
-func (t Transactions) Len() int {
-	return t.Len()
-}
+//type Transactions []*types.Transaction
+//
+//func (t Transactions) Len() int {
+//	return t.Len()
+//}
