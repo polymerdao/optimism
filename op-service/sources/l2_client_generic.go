@@ -2,6 +2,7 @@ package sources
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/core/types"
 
 	"math/big"
 
@@ -19,6 +20,7 @@ type L2ClientGeneric interface {
 	PayloadByNumber(ctx context.Context, num uint64) (*eth.ExecutionPayload, error)
 	PayloadByHash(ctx context.Context, hash common.Hash) (*eth.ExecutionPayload, error)
 	InfoByHash(ctx context.Context, hash common.Hash) (eth.BlockInfo, error)
+	InfoAndTxsByHash(ctx context.Context, blockHash common.Hash) (eth.BlockInfo, types.Transactions, error)
 	GetProof(ctx context.Context, address common.Address, storage []common.Hash, blockTag string) (*eth.AccountResult, error)
 
 	InfoByLabel(ctx context.Context, label eth.BlockLabel) (eth.BlockInfo, error)
