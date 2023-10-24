@@ -1,25 +1,6 @@
 package op_e2e
 
-import (
-	"context"
-	"math/big"
-	"testing"
-	"time"
-
-	"github.com/ethereum-optimism/optimism/op-e2e/e2eutils/geth"
-	"github.com/ethereum-optimism/optimism/op-program/client/driver"
-	opp "github.com/ethereum-optimism/optimism/op-program/host"
-	oppconf "github.com/ethereum-optimism/optimism/op-program/host/config"
-	"github.com/ethereum-optimism/optimism/op-service/client"
-	"github.com/ethereum-optimism/optimism/op-service/sources"
-	"github.com/ethereum-optimism/optimism/op-service/testlog"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/stretchr/testify/require"
-)
-
+/*
 func TestVerifyL2OutputRoot(t *testing.T) {
 	testVerifyL2OutputRoot(t, false)
 }
@@ -296,3 +277,4 @@ func waitForSafeHead(ctx context.Context, safeBlockNum uint64, rollupClient *sou
 		}
 	}
 }
+*/

@@ -9,6 +9,7 @@ import (
 
 	e2e "github.com/ethereum-optimism/optimism/op-e2e"
 	"github.com/ethereum-optimism/optimism/op-e2e/config"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,12 +30,11 @@ func TestShim(t *testing.T) {
 	}).Run(t)
 	t.Cleanup(func() { _ = ec.Close })
 
-	for _, endpoint := range []string{
-		ec.HTTPEndpoint(),
-	} {
+	for _, endpoint := range []string{ec.HTTPEndpoint()} {
 		plainURL, err := url.ParseRequestURI(endpoint)
 		require.NoError(t, err)
 		_, err = net.DialTimeout("tcp", plainURL.Host, time.Second)
 		require.NoError(t, err, "could not connect to HTTP port")
 	}
+	require.NotEqual(t, common.Hash{}, ec.GenesisBlockHash())
 }

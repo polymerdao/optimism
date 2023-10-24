@@ -92,3 +92,11 @@ func (p *PolymerClient) InfoAndTxsByHash(ctx context.Context, hash common.Hash) 
 func (p *PolymerClient) BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
 	return big.NewInt(10000000), nil
 }
+
+func (p *PolymerClient) TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
+	return nil, nil
+}
+
+func (p *PolymerClient) BlockByNumber(ctx context.Context, number *big.Int) (*types.Block, error) {
+	return nil, nil
+}

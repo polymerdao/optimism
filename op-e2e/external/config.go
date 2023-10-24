@@ -42,6 +42,7 @@ type Endpoints struct {
 	WSEndpoint       string `json:"ws_endpoint"`
 	HTTPAuthEndpoint string `json:"http_auth_endpoint"`
 	WSAuthEndpoint   string `json:"ws_auth_endpoint"`
+	GenesisBlockHash string `json:"genesis_block_hash"`
 }
 
 type TestParms struct {

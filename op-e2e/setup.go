@@ -53,6 +53,7 @@ import (
 	proposermetrics "github.com/ethereum-optimism/optimism/op-proposer/metrics"
 	l2os "github.com/ethereum-optimism/optimism/op-proposer/proposer"
 	"github.com/ethereum-optimism/optimism/op-service/cliapp"
+	"github.com/ethereum-optimism/optimism/op-service/client"
 	"github.com/ethereum-optimism/optimism/op-service/clock"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	oplog "github.com/ethereum-optimism/optimism/op-service/log"
@@ -209,6 +210,10 @@ type GethInstance struct {
 	Node    *node.Node
 }
 
+func (gi *GethInstance) GenesisBlockHash() common.Hash {
+	return common.Hash{}
+}
+
 func (gi *GethInstance) HTTPEndpoint() string {
 	return gi.Node.HTTPEndpoint()
 }
@@ -236,6 +241,7 @@ type EthInstance interface {
 	WSEndpoint() string
 	HTTPAuthEndpoint() string
 	WSAuthEndpoint() string
+	GenesisBlockHash() common.Hash
 	Close() error
 }
 
@@ -248,8 +254,10 @@ type System struct {
 
 	// Connections to running nodes
 	EthInstances      map[string]EthInstance
-	Clients           map[string]*ethclient.Client
-	RawClients        map[string]*rpc.Client
+	Clients           map[string]sources.L2ClientGeneric
+	L1Client          *ethclient.Client
+	L1RawClient       *rpc.Client
+	RawClients        map[string]client.RPC
 	RollupNodes       map[string]*rollupNode.OpNode
 	L2OutputSubmitter *l2os.L2OutputSubmitter
 	BatchSubmitter    *bss.BatchSubmitter
@@ -326,11 +334,12 @@ func (cfg SystemConfig) Start(t *testing.T, _opts ...SystemConfigOption) (*Syste
 		return nil, err
 	}
 
+	cfg.DisableBatcher = true
 	sys := &System{
 		cfg:          cfg,
 		EthInstances: make(map[string]EthInstance),
-		Clients:      make(map[string]*ethclient.Client),
-		RawClients:   make(map[string]*rpc.Client),
+		Clients:      make(map[string]sources.L2ClientGeneric),
+		RawClients:   make(map[string]client.RPC),
 		RollupNodes:  make(map[string]*rollupNode.OpNode),
 	}
 	didErrAfterStart := false
@@ -470,13 +479,17 @@ func (cfg SystemConfig) Start(t *testing.T, _opts ...SystemConfigOption) (*Syste
 			if len(cfg.GethOptions[name]) > 0 {
 				t.Skip("External L2 nodes do not support configuration through GethOptions")
 			}
+
 			ethClient = (&ExternalRunner{
 				Name:    name,
 				BinPath: cfg.ExternalL2Shim,
 				Genesis: l2Genesis,
 				JWTPath: cfg.JWTFilePath,
 			}).Run(t)
+			fmt.Printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxx name %s, ethClient: %v\n", name, sys.RollupConfig.Genesis.L2.Hash)
+			fmt.Printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxx l2Genesis  %v\n", l2Genesis.ToBlock().Hash())
 		}
+
 		sys.EthInstances[name] = ethClient
 	}
 
@@ -503,15 +516,15 @@ func (cfg SystemConfig) Start(t *testing.T, _opts ...SystemConfigOption) (*Syste
 	}
 	rawL1Client := rpc.DialInProc(l1Srv)
 	l1Client := ethclient.NewClient(rawL1Client)
-	sys.Clients["l1"] = l1Client
-	sys.RawClients["l1"] = rawL1Client
+	sys.L1Client = l1Client
+	sys.L1RawClient = rawL1Client
 	for name, ethInst := range sys.EthInstances {
-		rawClient, err := rpc.DialContext(ctx, ethInst.WSEndpoint())
+		rawClient, err := client.NewRPC(ctx, log.Root(), ethInst.HTTPEndpoint())
 		if err != nil {
 			didErrAfterStart = true
 			return nil, err
 		}
-		client := ethclient.NewClient(rawClient)
+		client := sources.NewPolymerClient(rawClient)
 		sys.RawClients[name] = rawClient
 		sys.Clients[name] = client
 	}
@@ -586,7 +599,11 @@ func (cfg SystemConfig) Start(t *testing.T, _opts ...SystemConfigOption) (*Syste
 	for _, name := range ks {
 		nodeConfig := cfg.Nodes[name]
 		c := *nodeConfig // copy
+		fmt.Printf("xxx creating roll up node name %s\n", name)
 		c.Rollup = makeRollupConfig()
+
+		c.Rollup.Genesis.L2.Hash = sys.EthInstances[name].GenesisBlockHash()
+
 		if err := c.LoadPersisted(cfg.Loggers[name]); err != nil {
 			return nil, err
 		}

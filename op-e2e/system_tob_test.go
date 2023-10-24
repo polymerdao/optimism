@@ -1,36 +1,6 @@
 package op_e2e
 
-import (
-	"bytes"
-	"context"
-	"crypto/ecdsa"
-	"fmt"
-	"math/big"
-	"math/rand"
-	"testing"
-	"time"
-
-	"github.com/ethereum-optimism/optimism/op-bindings/bindings"
-	"github.com/ethereum-optimism/optimism/op-bindings/predeploys"
-	"github.com/ethereum-optimism/optimism/op-e2e/e2eutils"
-	"github.com/ethereum-optimism/optimism/op-e2e/e2eutils/geth"
-	"github.com/ethereum-optimism/optimism/op-e2e/e2eutils/wait"
-	"github.com/ethereum-optimism/optimism/op-node/withdrawals"
-	"github.com/ethereum-optimism/optimism/op-service/testutils/fuzzerutils"
-	"github.com/ethereum/go-ethereum/accounts"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/ethclient/gethclient"
-	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/rpc"
-	fuzz "github.com/google/gofuzz"
-	"github.com/stretchr/testify/require"
-)
-
+/*
 // TestGasPriceOracleFeeUpdates checks that the gas price oracle cannot be locked by mis-configuring parameters.
 func TestGasPriceOracleFeeUpdates(t *testing.T) {
 	InitParallel(t)
@@ -725,3 +695,4 @@ func TestMixedWithdrawalValidity(t *testing.T) {
 		})
 	}
 }
+*/

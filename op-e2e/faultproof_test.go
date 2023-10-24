@@ -565,5 +565,5 @@ func startFaultDisputeSystem(t *testing.T) (*System, *ethclient.Client) {
 	cfg.NonFinalizedProposals = true // Submit output proposals asap
 	sys, err := cfg.Start(t)
 	require.Nil(t, err, "Error starting up system")
-	return sys, sys.Clients["l1"]
+	return sys, sys.L1Client
 }

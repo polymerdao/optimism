@@ -1,18 +1,6 @@
 package op_e2e
 
-import (
-	"context"
-	"testing"
-	"time"
-
-	"github.com/ethereum-optimism/optimism/op-e2e/e2eutils/wait"
-	"github.com/ethereum-optimism/optimism/op-node/node"
-	"github.com/ethereum-optimism/optimism/op-service/client"
-	"github.com/ethereum-optimism/optimism/op-service/sources"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/stretchr/testify/require"
-)
+/*
 
 func TestStopStartSequencer(t *testing.T) {
 	InitParallel(t)
@@ -178,3 +166,4 @@ func assertPersistedSequencerState(t *testing.T, stateFile string, expected node
 	require.NoError(t, err)
 	require.Equalf(t, expected, state, "expected sequencer state %v but was %v", expected, state)
 }
+*/

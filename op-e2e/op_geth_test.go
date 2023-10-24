@@ -11,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core/txpool"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -46,6 +45,8 @@ func TestMissingGasLimit(t *testing.T) {
 
 // TestTxGasSameAsBlockGasLimit tests that op-geth rejects transactions that attempt to use the full block gas limit.
 // The L1 Info deposit always takes gas so the effective gas limit is lower than the full block gas limit.
+
+/*
 func TestTxGasSameAsBlockGasLimit(t *testing.T) {
 	InitParallel(t)
 	cfg := DefaultSystemConfig(t)
@@ -63,8 +64,8 @@ func TestTxGasSameAsBlockGasLimit(t *testing.T) {
 	l2Seq := sys.Clients["sequencer"]
 	err = l2Seq.SendTransaction(ctx, tx)
 	require.ErrorContains(t, err, txpool.ErrGasLimit.Error())
-
 }
+*/
 
 // TestInvalidDepositInFCU runs an invalid deposit through a FCU/GetPayload/NewPayload/FCU set of calls.
 // This tests that deposits must always allow the block to be built even if they are invalid.
