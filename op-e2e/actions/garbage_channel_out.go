@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"io"
 
 	"github.com/ethereum-optimism/optimism/op-node/rollup"
@@ -54,7 +55,7 @@ type Writer interface {
 type ChannelOutIface interface {
 	ID() derive.ChannelID
 	Reset() error
-	AddBlock(block *types.Block) (uint64, error)
+	AddBlock(block peptide.EthBlock) (uint64, error)
 	ReadyBytes() int
 	Flush() error
 	Close() error
@@ -135,7 +136,7 @@ func (co *GarbageChannelOut) Reset() error {
 // error that it returns is ErrTooManyRLPBytes. If this error
 // is returned, the channel should be closed and a new one
 // should be made.
-func (co *GarbageChannelOut) AddBlock(block *types.Block) (uint64, error) {
+func (co *GarbageChannelOut) AddBlock(block peptide.EthBlock) (uint64, error) {
 	if co.closed {
 		return 0, errors.New("already closed")
 	}
@@ -231,7 +232,7 @@ func (co *GarbageChannelOut) OutputFrame(w *bytes.Buffer, maxSize uint64) (uint1
 }
 
 // blockToBatch transforms a block into a batch object that can easily be RLP encoded.
-func blockToBatch(block *types.Block) (*derive.BatchData, error) {
+func blockToBatch(block peptide.EthBlock) (*derive.BatchData, error) {
 	opaqueTxs := make([]hexutil.Bytes, 0, len(block.Transactions()))
 	for i, tx := range block.Transactions() {
 		if tx.Type() == types.DepositTxType {
