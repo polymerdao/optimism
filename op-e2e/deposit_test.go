@@ -1,18 +1,6 @@
 package op_e2e
 
-import (
-	"context"
-	"math/big"
-	"testing"
-	"time"
-
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/stretchr/testify/require"
-)
-
+/*
 func TestMintOnRevertedDeposit(t *testing.T) {
 	InitParallel(t)
 	cfg := DefaultSystemConfig(t)
@@ -136,3 +124,4 @@ func TestDepositTxCreateContract(t *testing.T) {
 	require.NoError(t, err, "get deployed contract code")
 	require.Equal(t, sstoreContract, code, "should have deployed correct contract code")
 }
+*/

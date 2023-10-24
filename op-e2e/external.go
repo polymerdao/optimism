@@ -30,6 +30,10 @@ type ExternalEthClient struct {
 	Endpoints external.Endpoints
 }
 
+func (eec *ExternalEthClient) GenesisBlockHash() common.Hash {
+	return common.HexToHash(eec.Endpoints.GenesisBlockHash)
+}
+
 func (eec *ExternalEthClient) HTTPEndpoint() string {
 	return eec.Endpoints.HTTPEndpoint
 }

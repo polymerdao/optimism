@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/ethereum-optimism/optimism/op-e2e/external"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 )
@@ -98,8 +99,10 @@ func execute(binPath string) (*gethSession, error) {
 	matcher := gbytes.Say("Listening")
 	var url string
 	var httpPort int64
-	re := regexp.MustCompile(`\saddr=([^:]+):(\d+)\s`)
-	for httpPort == 0 {
+	var hash common.Hash
+	httpPortRE := regexp.MustCompile(`\saddr=([^:]+):(\d+)\s`)
+	genesisBlockRE := regexp.MustCompile(`\shash=(\w+)`)
+	for (httpPort == 0 && hash == common.Hash{}) {
 		match, err := matcher.Match(sess.Out)
 		if err != nil {
 			return nil, fmt.Errorf("could not execute matcher")
@@ -114,13 +117,20 @@ func execute(binPath string) (*gethSession, error) {
 		}
 
 		for _, line := range strings.Split(string(sess.Out.Contents()), "\n") {
-			found := re.FindStringSubmatch(line)
+			found := httpPortRE.FindStringSubmatch(line)
 			if len(found) == 3 {
 				url = found[1]
 				httpPort, err = strconv.ParseInt(found[2], 10, 32)
 				if err != nil {
 					return nil, err
 				}
+				continue
+			}
+
+			found = genesisBlockRE.FindStringSubmatch(line)
+			if len(found) == 2 {
+				hash = common.HexToHash(found[1])
+				continue
 			}
 		}
 	}
@@ -132,6 +142,7 @@ func execute(binPath string) (*gethSession, error) {
 			WSEndpoint:       fmt.Sprintf("ws://%s:%d/websocket", url, httpPort),
 			HTTPAuthEndpoint: fmt.Sprintf("http://%s:%d/", url, httpPort),
 			WSAuthEndpoint:   fmt.Sprintf("ws://%s:%d/websocket", url, httpPort),
+			GenesisBlockHash: hash.Hex(),
 		},
 	}, nil
 }

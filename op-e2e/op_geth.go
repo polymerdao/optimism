@@ -78,7 +78,7 @@ func NewOpGeth(t *testing.T, ctx context.Context, cfg *SystemConfig) (*OpGeth, e
 		gethNode, _, err := geth.InitL2("l2", big.NewInt(int64(cfg.DeployConfig.L2ChainID)), l2Genesis, cfg.JWTFilePath)
 		require.Nil(t, err)
 		require.Nil(t, gethNode.Start())
-		node = gethNode
+		node = &GethInstance{Node: gethNode}
 	} else {
 		externalNode := (&ExternalRunner{
 			Name:    "l2",

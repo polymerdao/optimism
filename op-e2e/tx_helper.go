@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-e2e/e2eutils/geth"
 	"github.com/ethereum-optimism/optimism/op-e2e/e2eutils/transactions"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
+	"github.com/ethereum-optimism/optimism/op-service/sources"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -23,7 +24,7 @@ import (
 // The L2 transaction options can be configured by modifying the DepositTxOps value supplied to applyL2Opts
 // Will verify that the transaction is included with the expected status on L1 and L2
 // Returns the receipt of the L2 transaction
-func SendDepositTx(t *testing.T, cfg SystemConfig, l1Client *ethclient.Client, l2Client *ethclient.Client, l1Opts *bind.TransactOpts, applyL2Opts DepositTxOptsFn) *types.Receipt {
+func SendDepositTx(t *testing.T, cfg SystemConfig, l1Client *ethclient.Client, l2Client sources.L2ClientGeneric, l1Opts *bind.TransactOpts, applyL2Opts DepositTxOptsFn) *types.Receipt {
 	l2Opts := defaultDepositTxOpts(l1Opts)
 	applyL2Opts(l2Opts)
 
