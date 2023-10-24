@@ -7,6 +7,7 @@ import (
 
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 // L2ClientGeneric provides a set of methods for interacting with Layer 2 (L2) data. It is implemented by different
@@ -25,5 +26,12 @@ type L2ClientGeneric interface {
 
 	ChainID(context.Context) (*big.Int, error)
 
+	InfoAndTxsByHash(ctx context.Context, hash common.Hash) (eth.BlockInfo, types.Transactions, error)
+	InfoAndTxsByNumber(ctx context.Context, number uint64) (eth.BlockInfo, types.Transactions, error)
+	InfoAndTxsByLabel(ctx context.Context, label eth.BlockLabel) (eth.BlockInfo, types.Transactions, error)
+
 	Close()
+
+	// TODO add these to make the test happy
+	BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error)
 }
