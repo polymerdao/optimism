@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 )
 
@@ -61,10 +62,15 @@ func (p *PolymerClient) ChainID(ctx context.Context) (*big.Int, error) {
 	return chainID, err
 }
 
-func (p *PolymerClient) BlockByNumber(ctx context.Context, number uint64) (peptide.EthBlock, error) {
+func (p *PolymerClient) BlockByNumber(ctx context.Context, number *big.Int) (peptide.EthBlock, error) {
 	var block *peptide.Block
 	err := p.client.CallContext(ctx, block, "ee_getBlockByNumber", number)
 	return block, err
+}
+
+func (p *PolymerClient) InfoAndTxsByHash(ctx context.Context, blockHash common.Hash) (eth.BlockInfo, types.Transactions, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (p *PolymerClient) Close() {

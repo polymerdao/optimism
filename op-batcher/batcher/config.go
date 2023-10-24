@@ -23,7 +23,7 @@ type Config struct {
 	log        log.Logger
 	metr       metrics.Metricer
 	L1Client   *ethclient.Client
-	L2Client   *sources.PolymerClient
+	L2Client   sources.L2ClientGeneric
 	RollupNode *sources.RollupClient
 	TxManager  txmgr.TxManager
 

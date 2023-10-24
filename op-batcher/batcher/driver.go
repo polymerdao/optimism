@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"github.com/ethereum-optimism/optimism/op-service/sources"
 	"io"
+	"math/big"
 	_ "net/http/pprof"
 	"sync"
 	"time"
@@ -230,7 +231,7 @@ func (l *BatchSubmitter) loadBlocksIntoState(ctx context.Context) error {
 func (l *BatchSubmitter) loadBlockIntoState(ctx context.Context, blockNumber uint64) (peptide.EthBlock, error) {
 	ctx, cancel := context.WithTimeout(ctx, l.NetworkTimeout)
 	defer cancel()
-	block, err := l.L2Client.BlockByNumber(ctx, blockNumber)
+	block, err := l.L2Client.BlockByNumber(ctx, new(big.Int).SetUint64(blockNumber))
 	if err != nil {
 		return nil, fmt.Errorf("getting L2 block: %w", err)
 	}
