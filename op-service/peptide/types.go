@@ -89,9 +89,3 @@ func (b *Block) Transactions() types.Transactions {
 	}
 	return txs
 }
-
-//type Transactions []*types.Transaction
-//
-//func (t Transactions) Len() int {
-//	return t.Len()
-//}
