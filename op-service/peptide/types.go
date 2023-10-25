@@ -15,7 +15,7 @@ type Data = hexutil.Bytes
 type Hash = common.Hash
 
 type Block struct {
-	Txs             []bfttypes.Tx   `json:"txs"`
+	Txs             bfttypes.Txs    `json:"txs"`
 	Header          *tmproto.Header `json:"header"`
 	ParentBlockHash Hash            `json:"parentHash"`
 	L1Txs           []Data          `json:"l1Txs"`

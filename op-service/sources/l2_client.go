@@ -3,7 +3,6 @@ package sources
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
@@ -98,24 +97,24 @@ func NewL2Client(client client.RPC, log log.Logger, metrics caching.Metrics, con
 }
 
 // L2BlockRefByLabel returns the [eth.L2BlockRef] for the given block label.
-func (s *L2Client) L2BlockRefByLabel(ctx context.Context, label eth.BlockLabel) (eth.L2BlockRef, error) {
-	payload, err := s.PayloadByLabel(ctx, label)
-	if err != nil {
-		// Both geth and erigon like to serve non-standard errors for the safe and finalized heads, correct that.
-		// This happens when the chain just started and nothing is marked as safe/finalized yet.
-		if strings.Contains(err.Error(), "block not found") || strings.Contains(err.Error(), "Unknown block") {
-			err = ethereum.NotFound
-		}
-		// w%: wrap to preserve ethereum.NotFound case
-		return eth.L2BlockRef{}, fmt.Errorf("failed to determine L2BlockRef of %s, could not get payload: %w", label, err)
-	}
-	ref, err := derive.PayloadToBlockRef(payload, &s.rollupCfg.Genesis)
-	if err != nil {
-		return eth.L2BlockRef{}, err
-	}
-	s.l2BlockRefsCache.Add(ref.Hash, ref)
-	return ref, nil
-}
+//func (s *L2Client) L2BlockRefByLabel(ctx context.Context, label eth.BlockLabel) (eth.L2BlockRef, error) {
+//	payload, err := s.PayloadByLabel(ctx, label)
+//	if err != nil {
+//		// Both geth and erigon like to serve non-standard errors for the safe and finalized heads, correct that.
+//		// This happens when the chain just started and nothing is marked as safe/finalized yet.
+//		if strings.Contains(err.Error(), "block not found") || strings.Contains(err.Error(), "Unknown block") {
+//			err = ethereum.NotFound
+//		}
+//		// w%: wrap to preserve ethereum.NotFound case
+//		return eth.L2BlockRef{}, fmt.Errorf("failed to determine L2BlockRef of %s, could not get payload: %w", label, err)
+//	}
+//	ref, err := derive.PayloadToBlockRef(payload, &s.rollupCfg.Genesis)
+//	if err != nil {
+//		return eth.L2BlockRef{}, err
+//	}
+//	s.l2BlockRefsCache.Add(ref.Hash, ref)
+//	return ref, nil
+//}
 
 // L2BlockRefByNumber returns the [eth.L2BlockRef] for the given block number.
 func (s *L2Client) L2BlockRefByNumber(ctx context.Context, num uint64) (eth.L2BlockRef, error) {

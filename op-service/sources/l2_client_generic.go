@@ -21,6 +21,7 @@ type L2ClientGeneric interface {
 	PayloadByNumber(ctx context.Context, num uint64) (*eth.ExecutionPayload, error)
 	PayloadByHash(ctx context.Context, hash common.Hash) (*eth.ExecutionPayload, error)
 	GetProof(ctx context.Context, address common.Address, storage []common.Hash, blockTag string) (*eth.AccountResult, error)
+	L2BlockRefByLabel(ctx context.Context, label eth.BlockLabel) (eth.L2BlockRef, error)
 
 	InfoByLabel(ctx context.Context, label eth.BlockLabel) (eth.BlockInfo, error)
 	InfoByHash(ctx context.Context, hash common.Hash) (eth.BlockInfo, error)
@@ -29,6 +30,10 @@ type L2ClientGeneric interface {
 	ChainID(context.Context) (*big.Int, error)
 
 	Close()
+
+	GetPayload(ctx context.Context, payloadId eth.PayloadID) (*eth.ExecutionPayload, error)
+	ForkchoiceUpdate(ctx context.Context, state *eth.ForkchoiceState, attr *eth.PayloadAttributes) (*eth.ForkchoiceUpdatedResult, error)
+	NewPayload(ctx context.Context, payload *eth.ExecutionPayload) (*eth.PayloadStatusV1, error)
 
 	BlockByNumber(ctx context.Context, number *big.Int) (peptide.EthBlock, error)
 }
