@@ -1,0 +1,20 @@
+default:
+    @just --list --justfile {{justfile()}}
+
+# where polymer peptide server and its shim are located
+WD := "./external_polymer"
+go_test_flags := "-timeout=20m -parallel=8"
+
+# build polymer peptide server and its shim under ./external_polymer
+build-polymer:
+    make -C {{WD}} build
+
+# Can add extra flags to go test, e.g. `just test-polymer -v -count=1`
+# test polymer peptide execution engine; need to `just build-polymer` first if it changes or has not been built
+test-polymer *GO_TEST_FLAGS:
+    go test {{go_test_flags}} --externalL2 {{WD}} -run TestSystemE2E {{GO_TEST_FLAGS}}
+
+# set up devnet; only need to run once
+setup-devnet:
+    git submodule update --init --recursive
+    make devnet-allocs
