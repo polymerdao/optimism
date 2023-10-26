@@ -334,7 +334,7 @@ func (cfg SystemConfig) Start(t *testing.T, _opts ...SystemConfigOption) (*Syste
 		return nil, err
 	}
 
-	cfg.DisableBatcher = true
+	cfg.DisableBatcher = false
 	sys := &System{
 		cfg:          cfg,
 		EthInstances: make(map[string]EthInstance),

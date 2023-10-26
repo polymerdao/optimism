@@ -2,6 +2,9 @@ package sources
 
 import (
 	"context"
+	"fmt"
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
+	"github.com/ethereum/go-ethereum"
 	"math/big"
 	"strconv"
 
@@ -9,6 +12,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"strings"
 )
 
 // PolymerClient is a L2ClientGeneric implementation that interacts with the Polymer's ABCI app as an L2 Execution
@@ -21,6 +25,51 @@ var _ L2ClientGeneric = (*PolymerClient)(nil)
 
 func NewPolymerClient(client client.RPC) *PolymerClient {
 	return &PolymerClient{client: client}
+}
+
+func (p *PolymerClient) L2BlockRefByHash(ctx context.Context, l2Hash common.Hash) (eth.L2BlockRef, error) {
+	var blockRef eth.L2BlockRef
+	err := p.client.CallContext(ctx, &blockRef, "ee_getL2BlockRefByHash", l2Hash)
+	return blockRef, err
+}
+
+func (p *PolymerClient) L2BlockRefByLabel(ctx context.Context, label eth.BlockLabel) (eth.L2BlockRef, error) {
+	var blockRef eth.L2BlockRef
+	err := p.client.CallContext(ctx, &blockRef, "ee_getL2BlockRefByLabel", label)
+	if err != nil {
+		x, ok := err.(interface{ ErrorData() interface{} })
+		if ok {
+			if strings.Contains(x.ErrorData().(string), "not found") {
+				err = ethereum.NotFound
+
+			}
+		}
+
+		// w%: wrap to preserve ethereum.NotFound case
+		return eth.L2BlockRef{}, fmt.Errorf("failed to determine L2BlockRef of %s, could not get payload: %w", label, err)
+	}
+
+	return blockRef, err
+}
+
+func (p *PolymerClient) L2BlockRefByNumber(ctx context.Context, num uint64) (eth.L2BlockRef, error) {
+	var blockRef eth.L2BlockRef
+	err := p.client.CallContext(ctx, &blockRef, "ee_getL2BlockRefByNumber", strconv.FormatUint(num, 10))
+	if err != nil {
+		x, ok := err.(interface{ ErrorData() interface{} })
+		if ok {
+			if strings.Contains(x.ErrorData().(string), "not found") {
+				err = ethereum.NotFound
+
+			}
+		}
+
+		// w%: wrap to preserve ethereum.NotFound case
+		return eth.L2BlockRef{}, fmt.Errorf("failed to determine L2BlockRef of %d, could not get payload: %w", num, err)
+	}
+
+	return blockRef, err
+
 }
 
 func (p *PolymerClient) PayloadByLabel(ctx context.Context, label eth.BlockLabel) (*eth.ExecutionPayload, error) {
@@ -65,6 +114,12 @@ func (p *PolymerClient) ChainID(ctx context.Context) (*big.Int, error) {
 	return chainID, err
 }
 
+func (p *PolymerClient) BlockByNumber(ctx context.Context, number *big.Int) (peptide.EthBlock, error) {
+	var block *peptide.Block
+	err := p.client.CallContext(ctx, block, "ee_getBlockByNumber", number)
+	return block, err
+}
+
 func (p *PolymerClient) Close() {
 	p.client.Close()
 }
@@ -94,9 +149,5 @@ func (p *PolymerClient) BalanceAt(ctx context.Context, account common.Address, b
 }
 
 func (p *PolymerClient) TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
-	return nil, nil
-}
-
-func (p *PolymerClient) BlockByNumber(ctx context.Context, number *big.Int) (*types.Block, error) {
 	return nil, nil
 }

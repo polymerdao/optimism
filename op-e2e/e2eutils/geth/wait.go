@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"math/big"
 	"time"
 
@@ -59,7 +60,37 @@ type EthLikeClient interface {
 	BlockByNumber(ctx context.Context, number *big.Int) (*types.Block, error)
 }
 
+type L2LikeClient interface {
+	TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
+	BlockByNumber(ctx context.Context, number *big.Int) (peptide.EthBlock, error)
+}
+
 func WaitForTransaction(hash common.Hash, client EthLikeClient, timeout time.Duration) (*types.Receipt, error) {
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	for {
+		receipt, err := client.TransactionReceipt(ctx, hash)
+		if receipt != nil && err == nil {
+			return receipt, nil
+		} else if err != nil && !errors.Is(err, ethereum.NotFound) {
+			return nil, err
+		}
+
+		select {
+		case <-ctx.Done():
+			tip, err := client.BlockByNumber(context.Background(), nil)
+			if err != nil {
+				return nil, err
+			}
+			return nil, fmt.Errorf("receipt for transaction %s not found. tip block number is %d: %w", hash.Hex(), tip.NumberU64(), errTimeout)
+		case <-ticker.C:
+		}
+	}
+}
+
+func WaitForL2Transaction(hash common.Hash, client L2LikeClient, timeout time.Duration) (*types.Receipt, error) {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)

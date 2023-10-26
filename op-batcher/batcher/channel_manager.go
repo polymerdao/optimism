@@ -3,6 +3,7 @@ package batcher
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"io"
 	"sync"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
 )
 
@@ -30,7 +30,7 @@ type channelManager struct {
 	cfg  ChannelConfig
 
 	// All blocks since the last request for new tx data.
-	blocks []*types.Block
+	blocks []peptide.EthBlock
 	// last block hash - for reorg detection
 	tip common.Hash
 
@@ -307,7 +307,7 @@ func (s *channelManager) outputFrames() error {
 // AddL2Block adds an L2 block to the internal blocks queue. It returns ErrReorg
 // if the block does not extend the last block loaded into the state. If no
 // blocks were added yet, the parent hash check is skipped.
-func (s *channelManager) AddL2Block(block *types.Block) error {
+func (s *channelManager) AddL2Block(block peptide.EthBlock) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.tip != (common.Hash{}) && s.tip != block.ParentHash() {
@@ -321,7 +321,7 @@ func (s *channelManager) AddL2Block(block *types.Block) error {
 	return nil
 }
 
-func l2BlockRefFromBlockAndL1Info(block *types.Block, l1info derive.L1BlockInfo) eth.L2BlockRef {
+func l2BlockRefFromBlockAndL1Info(block peptide.EthBlock, l1info derive.L1BlockInfo) eth.L2BlockRef {
 	return eth.L2BlockRef{
 		Hash:           block.Hash(),
 		Number:         block.NumberU64(),
