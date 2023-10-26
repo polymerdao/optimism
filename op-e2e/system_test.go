@@ -124,6 +124,7 @@ func TestSystemE2E(t *testing.T) {
 
 	l1Client := sys.L1Client
 	l2Seq := sys.Clients["sequencer"]
+	// for now, no block production on l2 verifier node due to lack of p2p
 	l2Verif := sys.Clients["verifier"]
 
 	// Transactor Account
@@ -132,22 +133,31 @@ func TestSystemE2E(t *testing.T) {
 	// Send Transaction & wait for success
 	fromAddr := sys.cfg.Secrets.Addresses().Alice
 
-	//ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	//defer cancel()
-	//	startBalance, err := l2Verif.BalanceAt(ctx, fromAddr, nil)
-	//	require.Nil(t, err)
+	time.Sleep(2 * time.Second)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	startBalance, err := l2Seq.BalanceAt(ctx, fromAddr, nil)
+	require.Nil(t, err)
+	t.Logf("starting balance %s: %d", fromAddr, startBalance)
 
 	// Send deposit transaction
 	opts, err := bind.NewKeyedTransactorWithChainID(ethPrivKey, cfg.L1ChainIDBig())
 	require.Nil(t, err)
 	mintAmount := big.NewInt(1_000_000_000_000)
 	opts.Value = mintAmount
-	SendDepositTx(t, cfg, l1Client, l2Verif, opts, func(l2Opts *DepositTxOpts) {})
+	SendDepositTx(t, cfg, l1Client, l2Seq, opts, func(l2Opts *DepositTxOpts) {})
 
 	// Confirm balance
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	_, err = l2Verif.BalanceAt(ctx, fromAddr, nil)
+	t.Logf("query balance for Alice %s", fromAddr.String())
+	endBalance, err := l2Seq.BalanceAt(ctx, fromAddr, nil)
+	if err != nil {
+		t.Logf("error querying balance for Alice %s: %s", fromAddr.String(), err)
+	} else {
+		t.Logf("end balance %s: %s", fromAddr.String(), endBalance.String())
+	}
 	require.Nil(t, err)
 
 	//diff := new(big.Int)

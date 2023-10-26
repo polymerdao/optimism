@@ -1,4 +1,4 @@
-default:
+_default:
     @just --list --justfile {{justfile()}}
 
 # where polymer peptide server and its shim are located
@@ -11,8 +11,11 @@ build-polymer:
 
 # Can add extra flags to go test, e.g. `just test-polymer -v -count=1`
 # test polymer peptide execution engine; need to `just build-polymer` first if it changes or has not been built
-test-polymer *GO_TEST_FLAGS:
+test-polymer *GO_TEST_FLAGS: build-polymer
     go test {{go_test_flags}} --externalL2 {{WD}} -run TestSystemE2E {{GO_TEST_FLAGS}}
+
+test-polymer-shim *GO_TEST_FLAGS: build-polymer
+    cd {{WD}} && go test ./... -v
 
 # set up devnet; only need to run once
 setup-devnet:
