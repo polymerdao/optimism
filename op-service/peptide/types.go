@@ -63,7 +63,7 @@ func (b *Block) NumberU64() uint64 {
 }
 
 func (b *Block) Time() uint64 {
-	return uint64(b.Header.Time.Second())
+	return uint64(b.Header.Time.Unix())
 }
 
 func (b *Block) Transactions() types.Transactions {
