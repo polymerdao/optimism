@@ -3,12 +3,14 @@ package peptide
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	bfttypes "github.com/cometbft/cometbft/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
+	"strconv"
 )
 
 type Data = hexutil.Bytes
@@ -75,10 +77,16 @@ func (b *Block) Transactions() types.Transactions {
 		}
 		txs = append(txs, &tx)
 	}
+
+	chainId, err := strconv.Atoi(b.Header.ChainID)
+	if err != nil {
+		panic(fmt.Sprintf("block chain id is not an integer (%s): %w", b.Header.ChainID, err))
+	}
+
 	for _, l2tx := range b.Txs {
-		//TODO: update to proper tx data values if possible
+		//TODO: update to use proper Gas and To values if possible
 		txData := &types.DynamicFeeTx{
-			ChainID: big.NewInt(int64(0)),
+			ChainID: big.NewInt(int64(chainId)),
 			Data:    l2tx,
 			Gas:     0,
 			Value:   big.NewInt(0),
