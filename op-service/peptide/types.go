@@ -29,7 +29,7 @@ type EthBlock interface {
 	Time() uint64
 }
 
-type BlockData interface {
+type ExtendedEthBlock interface {
 	EthBlock
 	Height() uint64
 	Bytes() []byte
