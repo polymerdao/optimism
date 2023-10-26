@@ -67,7 +67,7 @@ func (b *Block) Time() uint64 {
 }
 
 func (b *Block) Transactions() types.Transactions {
-	txs := make(types.Transactions, len(b.L1Txs))
+	var txs types.Transactions
 	for _, l1tx := range b.L1Txs {
 		var tx types.Transaction
 		if err := tx.UnmarshalBinary(l1tx); err != nil {
