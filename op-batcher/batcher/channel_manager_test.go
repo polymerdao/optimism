@@ -1,6 +1,7 @@
 package batcher
 
 import (
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"io"
 	"math/big"
 	"math/rand"
@@ -46,7 +47,7 @@ func TestChannelManagerReturnsErrReorg(t *testing.T) {
 	require.NoError(t, m.AddL2Block(c))
 	require.ErrorIs(t, m.AddL2Block(x), ErrReorg)
 
-	require.Equal(t, []*types.Block{a, b, c}, m.blocks)
+	require.Equal(t, []peptide.EthBlock{a, b, c}, m.blocks)
 }
 
 // TestChannelManagerReturnsErrReorgWhenDrained ensures that the channel manager
