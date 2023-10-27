@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rpc"
 
@@ -124,6 +125,7 @@ func TestSystemE2E(t *testing.T) {
 
 	l1Client := sys.L1Client
 	l2Seq := sys.Clients["sequencer"]
+	// for now, no block production on l2 verifier node due to lack of p2p
 	l2Verif := sys.Clients["verifier"]
 
 	// Transactor Account
@@ -132,52 +134,66 @@ func TestSystemE2E(t *testing.T) {
 	// Send Transaction & wait for success
 	fromAddr := sys.cfg.Secrets.Addresses().Alice
 
-	//ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	//defer cancel()
-	//	startBalance, err := l2Verif.BalanceAt(ctx, fromAddr, nil)
-	//	require.Nil(t, err)
+	time.Sleep(2 * time.Second)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	startBalance, err := l2Seq.BalanceAt(ctx, fromAddr, nil)
+	require.Nil(t, err)
+	t.Logf("starting balance %s: %d", fromAddr, startBalance)
 
 	// Send deposit transaction
 	opts, err := bind.NewKeyedTransactorWithChainID(ethPrivKey, cfg.L1ChainIDBig())
 	require.Nil(t, err)
 	mintAmount := big.NewInt(1_000_000_000_000)
 	opts.Value = mintAmount
-	SendDepositTx(t, cfg, l1Client, l2Verif, opts, func(l2Opts *DepositTxOpts) {})
+	SendDepositTx(t, cfg, l1Client, l2Seq, opts, func(l2Opts *DepositTxOpts) {})
 
 	// Confirm balance
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	_, err = l2Verif.BalanceAt(ctx, fromAddr, nil)
+	t.Logf("query balance for Alice %s", fromAddr.String())
+	endBalance, err := l2Seq.BalanceAt(ctx, fromAddr, nil)
+	if err != nil {
+		t.Logf("error querying balance for Alice %s: %s", fromAddr.String(), err)
+	} else {
+		t.Logf("end balance %s: %s", fromAddr.String(), endBalance.String())
+	}
 	require.Nil(t, err)
 
-	//diff := new(big.Int)
-	//diff = diff.Sub(endBalance, startBalance)
-	// require.Equal(t, mintAmount, diff, "Did not get expected balance change")
+	diff := new(big.Int)
+	diff = diff.Sub(endBalance, startBalance)
+	require.Equal(t, mintAmount, diff, "Did not get expected balance change")
+
+	t.Logf("expected token diff on L2 for account %s: %s", fromAddr.String(), diff.String())
+
+	t.Skip()
 
 	// Submit TX to L2 sequencer node
-	//receipt := SendL2Tx(t, cfg, l2Seq, ethPrivKey, func(opts *TxOpts) {
-	//	opts.Value = big.NewInt(1_000_000_000)
-	//	opts.Nonce = 1 // Already have deposit
-	//	opts.ToAddr = &common.Address{0xff, 0xff}
-	//	opts.VerifyOnClients(l2Verif)
-	//})
+	// TODO: send cosmos txs
+	receipt := SendL2Tx(t, cfg, nil, ethPrivKey, func(opts *TxOpts) {
+		opts.Value = big.NewInt(1_000_000_000)
+		opts.Nonce = 1 // Already have deposit
+		opts.ToAddr = &common.Address{0xff, 0xff}
+		opts.VerifyOnClients(nil)
+	})
 
 	// Verify blocks match after batch submission on verifiers and sequencers
-	verifBlock, err := l2Verif.PayloadByNumber(context.Background(), 0 /* receipt.BlockNumber */)
+	verifBlock, err := l2Verif.BlockByNumber(context.Background(), receipt.BlockNumber)
 	require.Nil(t, err)
-	seqBlock, err := l2Seq.PayloadByNumber(context.Background(), 0 /* receipt.BlockNumber */)
+	seqBlock, err := l2Seq.BlockByNumber(context.Background(), receipt.BlockNumber)
 	require.Nil(t, err)
-	require.Equal(t, verifBlock.BlockNumber, seqBlock.BlockNumber, "Verifier and sequencer blocks not the same after including a batch tx")
-	//require.Equal(t, verifBlock.ParentHash(), seqBlock.ParentHash(), "Verifier and sequencer blocks parent hashes not the same after including a batch tx")
-	//require.Equal(t, verifBlock.Hash(), seqBlock.Hash(), "Verifier and sequencer blocks not the same after including a batch tx")
+	require.Equal(t, verifBlock.NumberU64(), seqBlock.NumberU64(), "Verifier and sequencer blocks not the same after including a batch tx")
+	require.Equal(t, verifBlock.ParentHash(), seqBlock.ParentHash(), "Verifier and sequencer blocks parent hashes not the same after including a batch tx")
+	require.Equal(t, verifBlock.Hash(), seqBlock.Hash(), "Verifier and sequencer blocks not the same after including a batch tx")
 
 	rollupRPCClient, err := rpc.DialContext(context.Background(), sys.RollupNodes["sequencer"].HTTPEndpoint())
 	require.Nil(t, err)
 	rollupClient := sources.NewRollupClient(client.NewBaseRPCClient(rollupRPCClient))
 	// basic check that sync status works
-	//	seqStatus, err := rollupClient.SyncStatus(context.Background())
-	//	require.Nil(t, err)
-	//	require.LessOrEqual(t, seqBlock.NumberU64(), seqStatus.UnsafeL2.Number)
+	seqStatus, err := rollupClient.SyncStatus(context.Background())
+	require.Nil(t, err)
+	require.LessOrEqual(t, seqBlock.NumberU64(), seqStatus.UnsafeL2.Number)
 	// basic check that version endpoint works
 	seqVersion, err := rollupClient.Version(context.Background())
 	require.Nil(t, err)

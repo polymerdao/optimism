@@ -2,6 +2,7 @@ package sources
 
 import (
 	"context"
+	"fmt"
 	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"math/big"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-service/client"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -116,9 +118,28 @@ func (p *PolymerClient) InfoAndTxsByHash(ctx context.Context, hash common.Hash) 
 // ----------------------------------------------------------
 // TODO make the test happy for now
 func (p *PolymerClient) BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
-	return big.NewInt(10000000), nil
+	var balance big.Int
+	err := p.client.CallContext(ctx, &balance, "ee_getBalance", account, toBlockNumArg(blockNumber))
+	return &balance, err
 }
 
 func (p *PolymerClient) TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
 	return nil, nil
+}
+
+func toBlockNumArg(number *big.Int) string {
+	if number == nil {
+		// default to Unsafe block label
+		return "latest"
+	}
+	if number.Sign() >= 0 {
+		return hexutil.EncodeBig(number)
+	}
+	// TODO: support negative block numbers
+	// // It's negative.
+	// if number.IsInt64() {
+	// 	return rpc.BlockNumber(number.Int64()).String()
+	// }
+	// // It's negative and large, which is invalid.
+	return fmt.Sprintf("<invalid %d>", number)
 }
