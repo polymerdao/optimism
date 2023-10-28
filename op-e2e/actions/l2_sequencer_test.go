@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"github.com/ethereum-optimism/optimism/op-service/client"
 	"math/big"
 	"testing"
 
@@ -24,12 +23,8 @@ func setupSequencerTest(t Testing, sd *e2eutils.SetupData, log log.Logger) (*L1M
 
 	l1F, err := sources.NewL1Client(miner.RPCClient(), log, nil, sources.L1ClientDefaultConfig(sd.RollupCfg, false, sources.RPCKindBasic))
 	require.NoError(t, err)
-
-	c, err := client.NewRPC(t.Ctx(), log, "http://127.0.0.1:26657")
-	require.NoError(t, err)
-
 	engine := NewL2Engine(t, log, sd.L2Cfg, sd.RollupCfg.Genesis.L1, jwtPath)
-	l2Cl, err := sources.NewEngineClient(c, log, nil, sources.EngineClientDefaultConfig(sd.RollupCfg))
+	l2Cl, err := sources.NewEngineClient(engine.RPCClient(), log, nil, sources.EngineClientDefaultConfig(sd.RollupCfg))
 	require.NoError(t, err)
 
 	sequencer := NewL2Sequencer(t, log, l1F, l2Cl, sd.RollupCfg, 0)
