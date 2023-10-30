@@ -2,7 +2,7 @@ package derive
 
 import (
 	"fmt"
-
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 
@@ -25,7 +25,7 @@ type L2BlockRefSource interface {
 
 // L2BlockToBlockRef extracts the essential L2BlockRef information from an L2
 // block ref source, falling back to genesis information if necessary.
-func L2BlockToBlockRef(block L2BlockRefSource, genesis *rollup.Genesis) (eth.L2BlockRef, error) {
+func L2BlockToBlockRef(block peptide.EthBlock, genesis *rollup.Genesis) (eth.L2BlockRef, error) {
 	hash, number := block.Hash(), block.NumberU64()
 
 	var l1Origin eth.BlockID

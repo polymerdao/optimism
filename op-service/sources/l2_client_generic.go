@@ -2,12 +2,13 @@ package sources
 
 import (
 	"context"
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
+	"github.com/ethereum/go-ethereum/core/types"
 
 	"math/big"
 
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 )
 
 // L2ClientGeneric provides a set of methods for interacting with Layer 2 (L2) data. It is implemented by different
@@ -36,5 +37,5 @@ type L2ClientGeneric interface {
 	BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error)
 
 	TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
-	BlockByNumber(ctx context.Context, number *big.Int) (*types.Block, error)
+	BlockByNumber(ctx context.Context, number *big.Int) (peptide.EthBlock, error)
 }

@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-service/client"
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
+	"github.com/ethereum-optimism/optimism/op-service/sources"
 	"io"
 	"math/big"
 	_ "net/http/pprof"
@@ -55,10 +58,11 @@ func NewBatchSubmitterFromCLIConfig(cfg CLIConfig, l log.Logger, m metrics.Metri
 		return nil, err
 	}
 
-	l2Client, err := dial.DialEthClientWithTimeout(dial.DefaultDialTimeout, l, cfg.L2EthRpc)
+	rpc, err := client.NewRPC(ctx, l, cfg.L2EthRpc)
 	if err != nil {
 		return nil, err
 	}
+	l2Client := sources.NewPolymerClient(rpc)
 
 	rollupClient, err := dial.DialRollupClientWithTimeout(dial.DefaultDialTimeout, l, cfg.RollupRpc)
 	if err != nil {
@@ -197,7 +201,7 @@ func (l *BatchSubmitter) loadBlocksIntoState(ctx context.Context) error {
 		return errors.New("start number is >= end number")
 	}
 
-	var latestBlock *types.Block
+	var latestBlock peptide.EthBlock
 	// Add all blocks to "state"
 	for i := start.Number + 1; i < end.Number+1; i++ {
 		block, err := l.loadBlockIntoState(ctx, i)
@@ -224,7 +228,7 @@ func (l *BatchSubmitter) loadBlocksIntoState(ctx context.Context) error {
 }
 
 // loadBlockIntoState fetches & stores a single block into `state`. It returns the block it loaded.
-func (l *BatchSubmitter) loadBlockIntoState(ctx context.Context, blockNumber uint64) (*types.Block, error) {
+func (l *BatchSubmitter) loadBlockIntoState(ctx context.Context, blockNumber uint64) (peptide.EthBlock, error) {
 	ctx, cancel := context.WithTimeout(ctx, l.NetworkTimeout)
 	defer cancel()
 	block, err := l.L2Client.BlockByNumber(ctx, new(big.Int).SetUint64(blockNumber))

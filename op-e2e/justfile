@@ -3,11 +3,15 @@ _default:
 
 # where polymer peptide server and its shim are located
 WD := "./external_polymer"
+BATCHER_WD := "../op-batcher"
 go_test_flags := "-timeout=20m -parallel=8"
 
 # build polymer peptide server and its shim under ./external_polymer
 build-polymer:
     make -C {{WD}} build
+
+build-op-batcher:
+    make -C {{BATCHER_WD}} op-batcher
 
 # Can add extra flags to go test, e.g. `just test-polymer -v -count=1`
 # test polymer peptide execution engine; need to `just build-polymer` first if it changes or has not been built
@@ -16,6 +20,9 @@ test-polymer *GO_TEST_FLAGS: build-polymer
 
 test-polymer-shim *GO_TEST_FLAGS: build-polymer
     cd {{WD}} && go test ./... -v
+
+test-op-batcher *GO_TEST_FLAGS: build-op-batcher
+    make -C {{BATCHER_WD}} test
 
 # set up devnet; only need to run once
 setup-devnet:
