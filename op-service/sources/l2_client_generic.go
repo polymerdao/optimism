@@ -2,6 +2,7 @@ package sources
 
 import (
 	"context"
+
 	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"github.com/ethereum/go-ethereum/core/types"
 
@@ -18,6 +19,7 @@ import (
 // bindings.
 type L2ClientGeneric interface {
 	PayloadByLabel(ctx context.Context, label eth.BlockLabel) (*eth.ExecutionPayload, error)
+	// TODO use big.Int for all num related api? requires some changes to op-node and friends though
 	PayloadByNumber(ctx context.Context, num uint64) (*eth.ExecutionPayload, error)
 	PayloadByHash(ctx context.Context, hash common.Hash) (*eth.ExecutionPayload, error)
 	InfoByHash(ctx context.Context, hash common.Hash) (eth.BlockInfo, error)

@@ -2,15 +2,12 @@ package sources
 
 import (
 	"context"
-	"fmt"
-	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"math/big"
-	"strconv"
 
 	"github.com/ethereum-optimism/optimism/op-service/client"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -40,7 +37,7 @@ func (p *PolymerClient) L2BlockRefByLabel(ctx context.Context, label eth.BlockLa
 
 func (p *PolymerClient) L2BlockRefByNumber(ctx context.Context, num uint64) (eth.L2BlockRef, error) {
 	var blockRef eth.L2BlockRef
-	err := p.client.CallContext(ctx, &blockRef, "ee_getL2BlockRefByNumber", strconv.FormatUint(num, 10))
+	err := p.client.CallContext(ctx, &blockRef, "ee_getL2BlockRefByNumber", big.NewInt(int64(num)))
 	return blockRef, err
 
 }
@@ -53,7 +50,7 @@ func (p *PolymerClient) PayloadByLabel(ctx context.Context, label eth.BlockLabel
 
 func (p *PolymerClient) PayloadByNumber(ctx context.Context, num uint64) (*eth.ExecutionPayload, error) {
 	var payload *eth.ExecutionPayload
-	err := p.client.CallContext(ctx, &payload, "ee_getPayloadByNumber", strconv.FormatUint(num, 10))
+	err := p.client.CallContext(ctx, &payload, "ee_getPayloadByNumber", big.NewInt(int64(num)))
 	return payload, err
 }
 
@@ -89,7 +86,7 @@ func (p *PolymerClient) ChainID(ctx context.Context) (*big.Int, error) {
 
 func (p *PolymerClient) BlockByNumber(ctx context.Context, number *big.Int) (peptide.EthBlock, error) {
 	var block peptide.Block
-	err := p.client.CallContext(ctx, &block, "ee_getBlockByNumber", toBlockNumArg(number))
+	err := p.client.CallContext(ctx, &block, "ee_getBlockByNumber", toValidNum(number))
 	return &block, err
 }
 
@@ -99,7 +96,7 @@ func (p *PolymerClient) Close() {
 
 func (p *PolymerClient) InfoAndTxsByNumber(ctx context.Context, number uint64) (eth.BlockInfo, types.Transactions, error) {
 	var info eth.BlockInfo
-	err := p.client.CallContext(ctx, &info, "ee_getInfoByNumber", number)
+	err := p.client.CallContext(ctx, &info, "ee_getInfoByNumber", big.NewInt((int64(number))))
 	return info, types.Transactions{}, err
 }
 
@@ -117,9 +114,9 @@ func (p *PolymerClient) InfoAndTxsByHash(ctx context.Context, hash common.Hash) 
 
 // ----------------------------------------------------------
 // TODO make the test happy for now
-func (p *PolymerClient) BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
+func (p *PolymerClient) BalanceAt(ctx context.Context, account common.Address, number *big.Int) (*big.Int, error) {
 	var balance big.Int
-	err := p.client.CallContext(ctx, &balance, "ee_getBalance", account, toBlockNumArg(blockNumber))
+	err := p.client.CallContext(ctx, &balance, "ee_getBalance", account, toValidNum(number))
 	return &balance, err
 }
 
@@ -127,19 +124,9 @@ func (p *PolymerClient) TransactionReceipt(ctx context.Context, txHash common.Ha
 	return nil, nil
 }
 
-func toBlockNumArg(number *big.Int) string {
-	if number == nil {
-		// default to Unsafe block label
-		return "latest"
+func toValidNum(num *big.Int) *big.Int {
+	if num == nil {
+		return big.NewInt(-1)
 	}
-	if number.Sign() >= 0 {
-		return hexutil.EncodeBig(number)
-	}
-	// TODO: support negative block numbers
-	// // It's negative.
-	// if number.IsInt64() {
-	// 	return rpc.BlockNumber(number.Int64()).String()
-	// }
-	// // It's negative and large, which is invalid.
-	return fmt.Sprintf("<invalid %d>", number)
+	return num
 }
