@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -91,18 +90,17 @@ func (es *gethSession) Close() {
 }
 
 func execute(binPath string) (*gethSession, error) {
-	cmd := exec.Command(binPath, "start", "--app-rpc-address", "localhost:0")
+	cmd := exec.Command(binPath, "start", "--app-rpc-address", "localhost:0", "--ee-http-server-address", "localhost:0")
 	sess, err := gexec.Start(cmd, os.Stdout, os.Stderr)
 	if err != nil {
 		return nil, fmt.Errorf("could not start op-polymer session: %w", err)
 	}
 	matcher := gbytes.Say("Listening")
-	var url string
-	var httpPort int64
+	var httpUrl, wsUrl string
 	var hash common.Hash
-	httpPortRE := regexp.MustCompile(`\saddr=([^:]+):(\d+)\s`)
+	urlRE := regexp.MustCompile(`Execution engine rpc server enabled\s+http=(.+)\sws=(.+)`)
 	genesisBlockRE := regexp.MustCompile(`\shash=(\w+)`)
-	for (httpPort == 0 && hash == common.Hash{}) {
+	for (httpUrl == "" && wsUrl == "" && hash == common.Hash{}) {
 		match, err := matcher.Match(sess.Out)
 		if err != nil {
 			return nil, fmt.Errorf("could not execute matcher")
@@ -117,13 +115,10 @@ func execute(binPath string) (*gethSession, error) {
 		}
 
 		for _, line := range strings.Split(string(sess.Out.Contents()), "\n") {
-			found := httpPortRE.FindStringSubmatch(line)
+			found := urlRE.FindStringSubmatch(line)
 			if len(found) == 3 {
-				url = found[1]
-				httpPort, err = strconv.ParseInt(found[2], 10, 32)
-				if err != nil {
-					return nil, err
-				}
+				httpUrl = found[1]
+				wsUrl = found[2]
 				continue
 			}
 
@@ -138,10 +133,10 @@ func execute(binPath string) (*gethSession, error) {
 	return &gethSession{
 		session: sess,
 		endpoints: &external.Endpoints{
-			HTTPEndpoint:     fmt.Sprintf("http://%s:%d/", url, httpPort),
-			WSEndpoint:       fmt.Sprintf("ws://%s:%d/websocket", url, httpPort),
-			HTTPAuthEndpoint: fmt.Sprintf("http://%s:%d/", url, httpPort),
-			WSAuthEndpoint:   fmt.Sprintf("ws://%s:%d/websocket", url, httpPort),
+			HTTPEndpoint:     httpUrl,
+			WSEndpoint:       wsUrl,
+			HTTPAuthEndpoint: httpUrl,
+			WSAuthEndpoint:   wsUrl,
 			GenesisBlockHash: hash.Hex(),
 		},
 	}, nil
