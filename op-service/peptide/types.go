@@ -21,6 +21,7 @@ type Block struct {
 	Header          *tmproto.Header `json:"header"`
 	ParentBlockHash Hash            `json:"parentHash"`
 	L1Txs           []Data          `json:"l1Txs"`
+	Timestamp       uint64          `json:"timestamp"`
 }
 
 type EthBlock interface {
@@ -65,7 +66,7 @@ func (b *Block) NumberU64() uint64 {
 }
 
 func (b *Block) Time() uint64 {
-	return uint64(b.Header.Time.Unix())
+	return b.Timestamp
 }
 
 func (b *Block) Transactions() types.Transactions {
