@@ -193,7 +193,7 @@ func (s *L2Client) OutputV0AtBlock(ctx context.Context, blockHash common.Hash) (
 	stateRoot := head.Root()
 	return &eth.OutputV0{
 		StateRoot:                eth.Bytes32(stateRoot),
-		MessagePasserStorageRoot: eth.Bytes32(proof.StorageHash),
+		MessagePasserStorageRoot: eth.Bytes32(proof.GetStorageHash()),
 		BlockHash:                blockHash,
 	}, nil
 }
