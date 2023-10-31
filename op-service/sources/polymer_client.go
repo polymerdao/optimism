@@ -66,8 +66,8 @@ func (p *PolymerClient) InfoByHash(ctx context.Context, hash common.Hash) (eth.B
 	return info, err
 }
 
-func (p *PolymerClient) GetProof(ctx context.Context, address common.Address, storage []common.Hash, blockTag string) (*eth.AccountResult, error) {
-	var result *eth.AccountResult
+func (p *PolymerClient) GetProof(ctx context.Context, address common.Address, storage []common.Hash, blockTag string) (eth.Proof, error) {
+	var result eth.Proof
 	err := p.client.CallContext(ctx, &result, "ee_getProof", address, storage, blockTag)
 	return result, err
 }

@@ -19,7 +19,7 @@ type l2EthClient interface {
 	InfoByHash(ctx context.Context, hash common.Hash) (eth.BlockInfo, error)
 	// GetProof returns a proof of the account, it may return a nil result without error if the address was not found.
 	// Optionally keys of the account storage trie can be specified to include with corresponding values in the proof.
-	GetProof(ctx context.Context, address common.Address, storage []common.Hash, blockTag string) (*eth.AccountResult, error)
+	GetProof(ctx context.Context, address common.Address, storage []common.Hash, blockTag string) (eth.Proof, error)
 	OutputV0AtBlock(ctx context.Context, blockHash common.Hash) (*eth.OutputV0, error)
 }
 
