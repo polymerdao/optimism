@@ -3,6 +3,7 @@ package op_e2e
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
 	"math/big"
 	"os"
 	"runtime"
@@ -200,7 +201,6 @@ func TestSystemE2E(t *testing.T) {
 	require.NotEqual(t, "", seqVersion)
 }
 
-/*
 // TestConfirmationDepth runs the rollup with both sequencer and verifier not immediately processing the tip of the chain.
 func TestConfirmationDepth(t *testing.T) {
 	InitParallel(t)
@@ -221,7 +221,7 @@ func TestConfirmationDepth(t *testing.T) {
 	log := testlog.Logger(t, log.LvlInfo)
 	log.Info("genesis", "l2", sys.RollupConfig.Genesis.L2, "l1", sys.RollupConfig.Genesis.L1, "l2_time", sys.RollupConfig.Genesis.L2Time)
 
-	l1Client := sys.Clients["l1"]
+	l1Client := sys.L1Client
 	l2Seq := sys.Clients["sequencer"]
 	l2Verif := sys.Clients["verifier"]
 
@@ -248,6 +248,7 @@ func TestConfirmationDepth(t *testing.T) {
 	require.LessOrEqual(t, verInfo.Number+verConfDepth, l1Head.NumberU64(), "the ver L2 head block should have an origin older than the L1 head block by at least the verifier conf depth")
 }
 
+/*
 // TestPendingGasLimit tests the configuration of the gas limit of the pending block,
 // and if it does not conflict with the regular gas limit on the verifier or sequencer.
 func TestPendingGasLimit(t *testing.T) {
@@ -307,6 +308,7 @@ func TestPendingGasLimit(t *testing.T) {
 		time.Sleep(500 * time.Millisecond)
 	}
 }
+*/
 
 // TestFinalize tests if L2 finalizes after sufficient time after L1 finalizes
 func TestFinalize(t *testing.T) {
@@ -334,6 +336,7 @@ func TestFinalize(t *testing.T) {
 	require.NotZerof(t, l2Finalized.NumberU64(), "must have finalized L2 block")
 }
 
+/*
 func TestMissingBatchE2E(t *testing.T) {
 	InitParallel(t)
 	// Note this test zeroes the balance of the batch-submitter to make the batches unable to go into L1.
