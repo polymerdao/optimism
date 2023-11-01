@@ -3,6 +3,8 @@ package op_e2e
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-bindings/bindings"
+	"github.com/ethereum-optimism/optimism/op-e2e/e2eutils/geth"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
 	"math/big"
 	"os"
@@ -39,7 +41,6 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-/*
 func TestL2OutputSubmitter(t *testing.T) {
 	InitParallel(t)
 
@@ -50,7 +51,7 @@ func TestL2OutputSubmitter(t *testing.T) {
 	require.Nil(t, err, "Error starting up system")
 	defer sys.Close()
 
-	l1Client := sys.Clients["l1"]
+	l1Client := sys.L1Client
 
 	rollupRPCClient, err := rpc.DialContext(context.Background(), sys.RollupNodes["sequencer"].HTTPEndpoint())
 	require.Nil(t, err)
@@ -68,8 +69,8 @@ func TestL2OutputSubmitter(t *testing.T) {
 	// when it creates it's first block and uses and old L1 Origin. It then does not submit a batch
 	// for that block and subsequently reorgs to match what the verifier derives when running the
 	// reconcillation process.
-	l2Verif := sys.Clients["verifier"]
-	_, err = geth.WaitForBlock(big.NewInt(6), l2Verif, 10*time.Duration(cfg.DeployConfig.L2BlockTime)*time.Second)
+	//l2Verif := sys.Clients["verifier"]
+	_, err = geth.WaitForBlock(big.NewInt(6), l1Client, 10*time.Duration(cfg.DeployConfig.L2BlockTime)*time.Second)
 	require.Nil(t, err)
 
 	// Wait for batch submitter to update L2 output oracle.
@@ -108,7 +109,6 @@ func TestL2OutputSubmitter(t *testing.T) {
 		}
 	}
 }
-*/
 
 // TestSystemE2E sets up a L1 Geth node, a rollup node, and a L2 geth node and then confirms that L1 deposits are reflected on L2.
 // All nodes are run in process (but are the full nodes, not mocked or stubbed).
@@ -134,6 +134,10 @@ func TestSystemE2E(t *testing.T) {
 
 	// Send Transaction & wait for success
 	fromAddr := sys.cfg.Secrets.Addresses().Alice
+
+	block, err := l2Seq.BlockByNumber(context.Background(), nil)
+	_, err = l2Seq.InfoByHash(context.Background(), block.Hash())
+	require.Nil(t, err)
 
 	time.Sleep(2 * time.Second)
 

@@ -60,14 +60,14 @@ func (p *PolymerClient) PayloadByHash(ctx context.Context, hash common.Hash) (*e
 	return payload, err
 }
 
-func (p *PolymerClient) InfoByHash(ctx context.Context, hash common.Hash) (eth.BlockInfo, error) {
-	var info eth.BlockInfo
+func (p *PolymerClient) InfoByHash(ctx context.Context, hash common.Hash) (eth.CommonBlockInfo, error) {
+	var info *eth.PolymerBlockInfo
 	err := p.client.CallContext(ctx, &info, "ee_getInfoByHash", hash)
 	return info, err
 }
 
 func (p *PolymerClient) GetProof(ctx context.Context, address common.Address, storage []common.Hash, blockTag string) (eth.Proof, error) {
-	var result eth.Proof
+	var result *eth.AccountResult
 	err := p.client.CallContext(ctx, &result, "ee_getProof", address, storage, blockTag)
 	return result, err
 }
