@@ -95,7 +95,7 @@ func execute(binPath string) (*gethSession, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not start op-polymer session: %w", err)
 	}
-	matcher := gbytes.Say("Listening")
+	matcher := gbytes.Say("Execution engine rpc server enabled")
 	var httpUrl, wsUrl string
 	var hash common.Hash
 	urlRE := regexp.MustCompile(`Execution engine rpc server enabled\s+http=(.+)\sws=(.+)`)
