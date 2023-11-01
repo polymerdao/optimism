@@ -38,9 +38,9 @@ func AttributesMatchBlock(attrs *eth.PayloadAttributes, parentHash common.Hash, 
 	if attrs.GasLimit == nil {
 		return fmt.Errorf("expected gaslimit in attributes to not be nil, expected %d", block.GasLimit)
 	}
-	//if *attrs.GasLimit != block.GasLimit {
-	//	return fmt.Errorf("gas limit does not match. expected %d. got: %d", *attrs.GasLimit, block.GasLimit)
-	//}
+	if *attrs.GasLimit != block.GasLimit {
+		return fmt.Errorf("gas limit does not match. expected %d. got: %d", *attrs.GasLimit, block.GasLimit)
+	}
 	return nil
 }
 
