@@ -42,7 +42,6 @@ func (res *AccountResult) GetStorageHash() common.Hash {
 
 // Verify an account (and optionally storage) proof from the getProof RPC. See https://eips.ethereum.org/EIPS/eip-1186
 func (res *AccountResult) Verify(stateRoot common.Hash) error {
-	return nil
 	// verify storage proof values, if any, against the storage trie root hash of the account
 	for i, entry := range res.StorageProof {
 		// load all MPT nodes into a DB

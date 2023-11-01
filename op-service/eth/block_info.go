@@ -8,11 +8,15 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
+type CommonBlockInfo interface {
+	Root() common.Hash // state-root
+}
+
 type BlockInfo interface {
+	CommonBlockInfo
 	Hash() common.Hash
 	ParentHash() common.Hash
 	Coinbase() common.Address
-	Root() common.Hash // state-root
 	NumberU64() uint64
 	Time() uint64
 	// MixDigest field, reused for randomness after The Merge (Bellatrix hardfork)
