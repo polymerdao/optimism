@@ -8,12 +8,12 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-type CommonBlockInfo interface {
+type RootBlockInfo interface {
 	Root() common.Hash // state-root
 }
 
 type BlockInfo interface {
-	CommonBlockInfo
+	RootBlockInfo
 	Hash() common.Hash
 	ParentHash() common.Hash
 	Coinbase() common.Address
