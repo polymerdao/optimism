@@ -60,7 +60,7 @@ func (p *PolymerClient) PayloadByHash(ctx context.Context, hash common.Hash) (*e
 	return payload, err
 }
 
-func (p *PolymerClient) InfoByHash(ctx context.Context, hash common.Hash) (eth.CommonBlockInfo, error) {
+func (p *PolymerClient) InfoByHash(ctx context.Context, hash common.Hash) (eth.RootBlockInfo, error) {
 	var info *eth.PolymerBlockInfo
 	err := p.client.CallContext(ctx, &info, "ee_getInfoByHash", hash)
 	return info, err

@@ -22,7 +22,7 @@ type L2ClientGeneric interface {
 	// TODO use big.Int for all num related api? requires some changes to op-node and friends though
 	PayloadByNumber(ctx context.Context, num uint64) (*eth.ExecutionPayload, error)
 	PayloadByHash(ctx context.Context, hash common.Hash) (*eth.ExecutionPayload, error)
-	InfoByHash(ctx context.Context, hash common.Hash) (eth.CommonBlockInfo, error)
+	InfoByHash(ctx context.Context, hash common.Hash) (eth.RootBlockInfo, error)
 	GetProof(ctx context.Context, address common.Address, storage []common.Hash, blockTag string) (eth.Proof, error)
 
 	InfoByLabel(ctx context.Context, label eth.BlockLabel) (eth.BlockInfo, error)

@@ -51,7 +51,7 @@ type L2Verifier struct {
 type L2API interface {
 	derive.Engine
 	L2BlockRefByNumber(ctx context.Context, num uint64) (eth.L2BlockRef, error)
-	InfoByHash(ctx context.Context, hash common.Hash) (eth.CommonBlockInfo, error)
+	InfoByHash(ctx context.Context, hash common.Hash) (eth.RootBlockInfo, error)
 	// GetProof returns a proof of the account, it may return a nil result without error if the address was not found.
 	GetProof(ctx context.Context, address common.Address, storage []common.Hash, blockTag string) (eth.Proof, error)
 	OutputV0AtBlock(ctx context.Context, blockHash common.Hash) (*eth.OutputV0, error)
