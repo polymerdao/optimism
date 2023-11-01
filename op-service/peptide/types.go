@@ -22,6 +22,7 @@ type Block struct {
 	ParentBlockHash Hash            `json:"parentHash"`
 	L1Txs           []Data          `json:"l1Txs"`
 	Timestamp       uint64          `json:"timestamp"`
+	GasLimit        *hexutil.Uint64 `json:"gasLimit"`
 }
 
 type EthBlock interface {
