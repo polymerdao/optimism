@@ -1,11 +1,11 @@
 build: shim polymer-peptide
 .PHONY: build
 
-POLYMER_CHAIN_DIR := ../../../polymerase/chain
+PEPTIDE_DIR := ../../../polymerase/peptide
 
 polymer-peptide:
-	@test -d $(POLYMER_CHAIN_DIR) || { echo "$(POLYMER_CHAIN_DIR) does not exist" ; exit 1; }
-	cd $(POLYMER_CHAIN_DIR) && go build -o $(realpath .)/polymer-peptide ./cmd/peptide
+	@test -d $(PEPTIDE_DIR) || { echo "$(PEPTIDE_DIR) does not exist" ; exit 1; }
+	cd $(PEPTIDE_DIR) && go build -o $(realpath .)/polymer-peptide ./cmd
 .PHONY: polymer-peptide
 
 shim: main.go
