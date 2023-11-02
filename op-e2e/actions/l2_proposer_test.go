@@ -19,14 +19,13 @@ func TestProposer(gt *testing.T) {
 	dp := e2eutils.MakeDeployParams(t, defaultRollupTestParams)
 	sd := e2eutils.Setup(t, dp, defaultAlloc)
 	log := testlog.Logger(t, log.LvlDebug)
-	miner, seqEngine, sequencer := setupSequencerTest(t, sd, log)
-
+	miner, _, sequencer, l2Cl := setupSequencerTestNew(t, gt, sd, log)
 	rollupSeqCl := sequencer.RollupClient()
 	batcher := NewL2Batcher(log, sd.RollupCfg, &BatcherCfg{
 		MinL1TxSize: 0,
 		MaxL1TxSize: 128_000,
 		BatcherKey:  dp.Secrets.Batcher,
-	}, rollupSeqCl, miner.EthClient(), seqEngine.EthClient())
+	}, rollupSeqCl, miner.EthClient(), l2Cl)
 
 	proposer := NewL2Proposer(t, log, &ProposerCfg{
 		OutputOracleAddr:  sd.DeploymentsL1.L2OutputOracleProxy,
@@ -76,7 +75,7 @@ func TestProposer(gt *testing.T) {
 	blockNumber, err := outputOracleContract.LatestBlockNumber(&bind.CallOpts{})
 	require.NoError(t, err)
 	require.Greater(t, int64(blockNumber.Uint64()), int64(0), "latest block number must be greater than 0")
-	block, err := seqEngine.EthClient().BlockByNumber(t.Ctx(), blockNumber)
+	block, err := l2Cl.BlockByNumber(t.Ctx(), blockNumber)
 	require.NoError(t, err)
 	outputOnL1, err := outputOracleContract.GetL2OutputAfter(&bind.CallOpts{}, blockNumber)
 	require.NoError(t, err)

@@ -39,7 +39,7 @@ func TestBatcher(gt *testing.T) {
 		MinL1TxSize: 0,
 		MaxL1TxSize: 128_000,
 		BatcherKey:  dp.Secrets.Batcher,
-	}, rollupSeqCl, miner.EthClient(), seqEngine.EthClient())
+	}, rollupSeqCl, miner.EthClient(), seqEngine.BlocksAPIClient())
 
 	// Alice makes a L2 tx
 	cl := seqEngine.EthClient()
@@ -137,7 +137,7 @@ func TestL2Finalization(gt *testing.T) {
 		MinL1TxSize: 0,
 		MaxL1TxSize: 128_000,
 		BatcherKey:  dp.Secrets.Batcher,
-	}, sequencer.RollupClient(), miner.EthClient(), engine.EthClient())
+	}, sequencer.RollupClient(), miner.EthClient(), engine.BlocksAPIClient())
 
 	heightToSubmit := sequencer.SyncStatus().UnsafeL2.Number
 
@@ -223,7 +223,7 @@ func TestL2FinalizationWithSparseL1(gt *testing.T) {
 		MinL1TxSize: 0,
 		MaxL1TxSize: 128_000,
 		BatcherKey:  dp.Secrets.Batcher,
-	}, sequencer.RollupClient(), miner.EthClient(), engine.EthClient())
+	}, sequencer.RollupClient(), miner.EthClient(), engine.BlocksAPIClient())
 	batcher.ActSubmitAll(t)
 
 	// include in L1
@@ -287,7 +287,7 @@ func TestGarbageBatch(gt *testing.T) {
 			}
 		}
 
-		batcher := NewL2Batcher(log, sd.RollupCfg, batcherCfg, sequencer.RollupClient(), miner.EthClient(), engine.EthClient())
+		batcher := NewL2Batcher(log, sd.RollupCfg, batcherCfg, sequencer.RollupClient(), miner.EthClient(), engine.BlocksAPIClient())
 
 		sequencer.ActL2PipelineFull(t)
 		verifier.ActL2PipelineFull(t)
@@ -359,7 +359,7 @@ func TestExtendedTimeWithoutL1Batches(gt *testing.T) {
 		MinL1TxSize: 0,
 		MaxL1TxSize: 128_000,
 		BatcherKey:  dp.Secrets.Batcher,
-	}, sequencer.RollupClient(), miner.EthClient(), engine.EthClient())
+	}, sequencer.RollupClient(), miner.EthClient(), engine.BlocksAPIClient())
 
 	sequencer.ActL2PipelineFull(t)
 	verifier.ActL2PipelineFull(t)
@@ -417,7 +417,7 @@ func TestBigL2Txs(gt *testing.T) {
 		MinL1TxSize: 0,
 		MaxL1TxSize: 40_000, // try a small batch size, to force the data to be split between more frames
 		BatcherKey:  dp.Secrets.Batcher,
-	}, sequencer.RollupClient(), miner.EthClient(), engine.EthClient())
+	}, sequencer.RollupClient(), miner.EthClient(), engine.BlocksAPIClient())
 
 	sequencer.ActL2PipelineFull(t)
 

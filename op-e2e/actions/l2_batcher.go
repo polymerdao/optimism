@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"crypto/rand"
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"io"
 	"math/big"
 
@@ -27,7 +28,7 @@ type SyncStatusAPI interface {
 }
 
 type BlocksAPI interface {
-	BlockByNumber(ctx context.Context, number *big.Int) (*types.Block, error)
+	BlockByNumber(ctx context.Context, number *big.Int) (peptide.EthBlock, error)
 }
 
 type L1TxAPI interface {

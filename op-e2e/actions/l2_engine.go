@@ -3,6 +3,8 @@ package actions
 import (
 	"context"
 	"errors"
+	"github.com/ethereum-optimism/optimism/op-service/peptide"
+	"math/big"
 	"time"
 
 	"github.com/ethereum-optimism/optimism/op-e2e/e2eutils"
@@ -137,6 +139,18 @@ func (e *engineApiBackend) Genesis() *core.Genesis {
 func (s *L2Engine) EthClient() *ethclient.Client {
 	cl := s.node.Attach()
 	return ethclient.NewClient(cl)
+}
+
+type BlocksClient struct {
+	c *ethclient.Client
+}
+
+func (b *BlocksClient) BlockByNumber(ctx context.Context, number *big.Int) (peptide.EthBlock, error) {
+	return b.c.BlockByNumber(ctx, number)
+}
+
+func (s *L2Engine) BlocksAPIClient() BlocksAPI {
+	return &BlocksClient{s.EthClient()}
 }
 
 func (s *L2Engine) GethClient() *gethclient.Client {
