@@ -90,7 +90,7 @@ func (es *gethSession) Close() {
 }
 
 func execute(binPath string) (*gethSession, error) {
-	cmd := exec.Command(binPath, "start", "--app-rpc-address", "localhost:0", "--ee-http-server-address", "localhost:0")
+	cmd := exec.Command(binPath, "start", "--app-rpc-address", "localhost:0", "--ee-http-server-address", "localhost:0", "--db-backend", "memdb")
 	sess, err := gexec.Start(cmd, os.Stdout, os.Stderr)
 	if err != nil {
 		return nil, fmt.Errorf("could not start op-polymer session: %w", err)
