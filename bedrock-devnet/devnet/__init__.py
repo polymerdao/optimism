@@ -16,15 +16,20 @@ import devnet.log_setup
 pjoin = os.path.join
 
 parser = argparse.ArgumentParser(description='Bedrock devnet launcher')
-parser.add_argument('--monorepo-dir', help='Directory of the monorepo', default=os.getcwd())
-parser.add_argument('--allocs', help='Only create the allocs and exit', type=bool, action=argparse.BooleanOptionalAction)
-parser.add_argument('--test', help='Tests the deployment, must already be deployed', type=bool, action=argparse.BooleanOptionalAction)
+parser.add_argument(
+    '--monorepo-dir', help='Directory of the monorepo', default=os.getcwd())
+parser.add_argument('--allocs', help='Only create the allocs and exit',
+                    type=bool, action=argparse.BooleanOptionalAction)
+parser.add_argument('--test', help='Tests the deployment, must already be deployed',
+                    type=bool, action=argparse.BooleanOptionalAction)
 
 log = logging.getLogger()
+
 
 class Bunch:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
+
 
 class ChildProcess:
     def __init__(self, func, *args):
@@ -52,41 +57,43 @@ def main():
 
     monorepo_dir = os.path.abspath(args.monorepo_dir)
     devnet_dir = pjoin(monorepo_dir, '.devnet')
-    contracts_bedrock_dir = pjoin(monorepo_dir, 'packages', 'contracts-bedrock')
+    contracts_bedrock_dir = pjoin(
+        monorepo_dir, 'packages', 'contracts-bedrock')
     deployment_dir = pjoin(contracts_bedrock_dir, 'deployments', 'devnetL1')
     op_node_dir = pjoin(args.monorepo_dir, 'op-node')
     ops_bedrock_dir = pjoin(monorepo_dir, 'ops-bedrock')
     deploy_config_dir = pjoin(contracts_bedrock_dir, 'deploy-config')
     devnet_config_path = pjoin(deploy_config_dir, 'devnetL1.json')
-    devnet_config_template_path = pjoin(deploy_config_dir, 'devnetL1-template.json')
+    devnet_config_template_path = pjoin(
+        deploy_config_dir, 'devnetL1-template.json')
     ops_chain_ops = pjoin(monorepo_dir, 'op-chain-ops')
     sdk_dir = pjoin(monorepo_dir, 'packages', 'sdk')
 
     paths = Bunch(
-      mono_repo_dir=monorepo_dir,
-      devnet_dir=devnet_dir,
-      contracts_bedrock_dir=contracts_bedrock_dir,
-      deployment_dir=deployment_dir,
-      l1_deployments_path=pjoin(deployment_dir, '.deploy'),
-      deploy_config_dir=deploy_config_dir,
-      devnet_config_path=devnet_config_path,
-      devnet_config_template_path=devnet_config_template_path,
-      op_node_dir=op_node_dir,
-      ops_bedrock_dir=ops_bedrock_dir,
-      ops_chain_ops=ops_chain_ops,
-      sdk_dir=sdk_dir,
-      genesis_l1_path=pjoin(devnet_dir, 'genesis-l1.json'),
-      genesis_l2_path=pjoin(devnet_dir, 'genesis-l2.json'),
-      allocs_path=pjoin(devnet_dir, 'allocs-l1.json'),
-      addresses_json_path=pjoin(devnet_dir, 'addresses.json'),
-      sdk_addresses_json_path=pjoin(devnet_dir, 'sdk-addresses.json'),
-      rollup_config_path=pjoin(devnet_dir, 'rollup.json')
+        mono_repo_dir=monorepo_dir,
+        devnet_dir=devnet_dir,
+        contracts_bedrock_dir=contracts_bedrock_dir,
+        deployment_dir=deployment_dir,
+        l1_deployments_path=pjoin(deployment_dir, '.deploy'),
+        deploy_config_dir=deploy_config_dir,
+        devnet_config_path=devnet_config_path,
+        devnet_config_template_path=devnet_config_template_path,
+        op_node_dir=op_node_dir,
+        ops_bedrock_dir=ops_bedrock_dir,
+        ops_chain_ops=ops_chain_ops,
+        sdk_dir=sdk_dir,
+        genesis_l1_path=pjoin(devnet_dir, 'genesis-l1.json'),
+        genesis_l2_path=pjoin(devnet_dir, 'genesis-l2.json'),
+        allocs_path=pjoin(devnet_dir, 'allocs-l1.json'),
+        addresses_json_path=pjoin(devnet_dir, 'addresses.json'),
+        sdk_addresses_json_path=pjoin(devnet_dir, 'sdk-addresses.json'),
+        rollup_config_path=pjoin(devnet_dir, 'rollup.json')
     )
 
     if args.test:
-      log.info('Testing deployed devnet')
-      devnet_test(paths)
-      return
+        log.info('Testing deployed devnet')
+        devnet_test(paths)
+        return
 
     os.makedirs(devnet_dir, exist_ok=True)
 
@@ -95,7 +102,7 @@ def main():
         return
 
     log.info('Building docker images')
-    run_command(['docker', 'compose', 'build', '--progress', 'plain'], cwd=paths.ops_bedrock_dir, env={
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'build', '--no-cache', '--progress', 'plain'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir
     })
 
@@ -121,8 +128,8 @@ def deploy_contracts(paths):
 
     # deploy the create2 deployer
     run_command([
-      'cast', 'publish', '--rpc-url', 'http://127.0.0.1:8545',
-      '0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222'
+        'cast', 'publish', '--rpc-url', 'http://127.0.0.1:8545',
+        '0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222'
     ], env={}, cwd=paths.contracts_bedrock_dir)
 
     fqn = 'scripts/Deploy.s.sol:Deploy'
@@ -140,11 +147,14 @@ def deploy_contracts(paths):
         '--rpc-url', 'http://127.0.0.1:8545'
     ], env={}, cwd=paths.contracts_bedrock_dir)
 
+
 def init_devnet_l1_deploy_config(paths, update_timestamp=False):
     deploy_config = read_json(paths.devnet_config_template_path)
     if update_timestamp:
-        deploy_config['l1GenesisBlockTimestamp'] = '{:#x}'.format(int(time.time()))
+        deploy_config['l1GenesisBlockTimestamp'] = '{:#x}'.format(
+            int(time.time()))
     write_json(paths.devnet_config_path, deploy_config)
+
 
 def devnet_l1_genesis(paths):
     log.info('Generating L1 genesis state')
@@ -198,7 +208,7 @@ def devnet_deploy(paths):
         ], cwd=paths.op_node_dir)
 
     log.info('Starting L1.')
-    run_command(['docker', 'compose', 'up', '-d', 'l1'], cwd=paths.ops_bedrock_dir, env={
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'l1'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir
     })
     wait_up(8545)
@@ -221,11 +231,14 @@ def devnet_deploy(paths):
     addresses = read_json(paths.addresses_json_path)
 
     log.info('Bringing up L2.')
-    run_command(['docker', 'compose', 'up', '-d', 'l2'], cwd=paths.ops_bedrock_dir, env={
+    # 'op-geth-2'
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-geth-1', 'op-geth-2'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir
     })
     wait_up(9545)
+    wait_up(9546)
     wait_for_rpc_server('127.0.0.1:9545')
+    wait_for_rpc_server('127.0.0.1:9546')
 
     l2_output_oracle = addresses['L2OutputOracleProxy']
     log.info(f'Using L2OutputOracle {l2_output_oracle}')
@@ -233,7 +246,8 @@ def devnet_deploy(paths):
     log.info(f'Using batch inbox {batch_inbox_address}')
 
     log.info('Bringing up everything else.')
-    run_command(['docker', 'compose', 'up', '-d', 'op-node', 'op-proposer', 'op-batcher'], cwd=paths.ops_bedrock_dir, env={
+    #
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-node-1', 'op-proposer-1', 'op-batcher-1', 'op-node-2', 'op-proposer-2', 'op-batcher-2'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir,
         'L2OO_ADDRESS': l2_output_oracle,
         'SEQUENCER_BATCH_INBOX_ADDRESS': batch_inbox_address
@@ -285,24 +299,29 @@ def wait_for_rpc_server(url):
             log.info(f'Waiting for RPC server at {url}')
             time.sleep(1)
 
+
 def devnet_test(paths):
     # Check the L2 config
     run_command(
-        ['go', 'run', 'cmd/check-l2/main.go', '--l2-rpc-url', 'http://localhost:9545', '--l1-rpc-url', 'http://localhost:8545'],
+        ['go', 'run', 'cmd/check-l2/main.go', '--l2-rpc-url',
+            'http://localhost:9545', '--l1-rpc-url', 'http://localhost:8545'],
         cwd=paths.ops_chain_ops,
     )
 
     run_command(
-         ['npx', 'hardhat',  'deposit-erc20', '--network',  'devnetL1', '--l1-contracts-json-path', paths.addresses_json_path],
-         cwd=paths.sdk_dir,
-         timeout=8*60,
+        ['npx', 'hardhat',  'deposit-erc20', '--network',  'devnetL1',
+            '--l1-contracts-json-path', paths.addresses_json_path],
+        cwd=paths.sdk_dir,
+        timeout=8*60,
     )
 
     run_command(
-         ['npx', 'hardhat',  'deposit-eth', '--network',  'devnetL1', '--l1-contracts-json-path', paths.addresses_json_path],
-         cwd=paths.sdk_dir,
-         timeout=8*60,
+        ['npx', 'hardhat',  'deposit-eth', '--network',  'devnetL1',
+            '--l1-contracts-json-path', paths.addresses_json_path],
+        cwd=paths.sdk_dir,
+        timeout=8*60,
     )
+
 
 def run_command(args, check=True, shell=False, cwd=None, env=None, timeout=None):
     env = env if env else {}
