@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/ethereum-optimism/optimism/op-e2e/external"
@@ -67,6 +69,14 @@ func run(configPath string) error {
 	}
 
 	fmt.Printf("==================    op-polymer shim awaiting termination  ==========================\n")
+
+	// Listen for kill signals
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
+
+	<-sigCh
+	sess.Close()
+
 	select {
 	case <-sess.session.Exited:
 		return fmt.Errorf("geth exited")
