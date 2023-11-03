@@ -837,6 +837,10 @@ github.com/polymerdao/cosmos-sdk v0.47.2-0.20231019015026-1f883c9977fd h1:GCWB9n
 github.com/polymerdao/cosmos-sdk v0.47.2-0.20231019015026-1f883c9977fd/go.mod h1:EHwCeN9IXonsjKcjpS12MqeStdZvIdxt3VYXhus3G3c=
 github.com/polymerdao/gogoproto v0.0.0-20230905135849-dbeac9fa0743 h1:xf7QUvGTNzhsI1YZoEXnLnouCOmdKV2slSXjnjqM6/s=
 github.com/polymerdao/gogoproto v0.0.0-20230905135849-dbeac9fa0743/go.mod h1:NPtiVAbpYIlRjEUSpLgWMUYuxzR8NR2zLntWcm15N6o=
+github.com/polymerdao/polymerase/types v0.0.0-20231103173937-e6c3efa0bdce h1:9q26hUJVxoSt+kk/LM897kdHX9yOFNTTec0aC+/SE64=
+github.com/polymerdao/polymerase/types v0.0.0-20231103173937-e6c3efa0bdce/go.mod h1:Hqdg/MBDnZUYxI0Q+rQXCxNcQ0VSyZ1iwH8UmkcLtDU=
+github.com/polymerdao/polymerase/types v0.0.0-20231103223612-5d6e30e449e1 h1:wVVfLJo5ZYGFeKB3BH3ZoSg+zVPw8umzKmQXNsWTS+E=
+github.com/polymerdao/polymerase/types v0.0.0-20231103223612-5d6e30e449e1/go.mod h1:Hqdg/MBDnZUYxI0Q+rQXCxNcQ0VSyZ1iwH8UmkcLtDU=
 github.com/prashantv/gostub v1.1.0 h1:BTyx3RfQjRHnUWaGF9oQos79AlQ5k8WNktv7VGvVH4g=
 github.com/prashantv/gostub v1.1.0/go.mod h1:A5zLQHz7ieHGG7is6LLXLz7I8+3LZzsrV0P1IAHhP5U=
 github.com/prometheus/client_golang v0.8.0/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=

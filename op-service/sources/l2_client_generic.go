@@ -3,7 +3,6 @@ package sources
 import (
 	"context"
 
-	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"github.com/ethereum/go-ethereum/core/types"
 
 	"math/big"
@@ -39,5 +38,5 @@ type L2ClientGeneric interface {
 	BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error)
 
 	TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
-	BlockByNumber(ctx context.Context, number *big.Int) (peptide.EthBlock, error)
+	BlockByNumber(ctx context.Context, number *big.Int) (eth.EthBlock, error)
 }
