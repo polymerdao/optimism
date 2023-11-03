@@ -102,7 +102,7 @@ def main():
         return
 
     log.info('Building docker images')
-    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'build', '--no-cache', '--progress', 'plain'], cwd=paths.ops_bedrock_dir, env={
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'build', '--progress', 'plain'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir
     })
 
@@ -232,13 +232,15 @@ def devnet_deploy(paths):
 
     log.info('Bringing up L2.')
     # 'op-geth-2'
-    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-geth-1', 'op-geth-2'], cwd=paths.ops_bedrock_dir, env={
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-geth-1', 'op-geth-2', 'op-peptide'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir
     })
     wait_up(9545)
     wait_up(9546)
+    wait_up(9547)
     wait_for_rpc_server('127.0.0.1:9545')
     wait_for_rpc_server('127.0.0.1:9546')
+    wait_for_rpc_server('127.0.0.1:9547')
 
     l2_output_oracle = addresses['L2OutputOracleProxy']
     log.info(f'Using L2OutputOracle {l2_output_oracle}')
@@ -247,11 +249,16 @@ def devnet_deploy(paths):
 
     log.info('Bringing up everything else.')
     #
-    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-node-1', 'op-proposer-1', 'op-batcher-1', 'op-node-2', 'op-proposer-2', 'op-batcher-2'], cwd=paths.ops_bedrock_dir, env={
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-node-1', 'op-proposer-1', 'op-batcher-1', 'op-node-2', 'op-proposer-2', 'op-batcher-2', 'op-node-polymer', 'op-proposer-polymer', 'op-batcher-polymer'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir,
         'L2OO_ADDRESS': l2_output_oracle,
         'SEQUENCER_BATCH_INBOX_ADDRESS': batch_inbox_address
     })
+
+    # log.info('Bringing up op-relayer.')
+    # run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-relayer'], cwd=paths.ops_bedrock_dir, env={
+    #     'PWD': paths.ops_bedrock_dir
+    # })
 
     log.info('Devnet ready.')
 

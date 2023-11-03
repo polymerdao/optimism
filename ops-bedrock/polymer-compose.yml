@@ -8,6 +8,7 @@ volumes:
   l1_data:
   l2_data_1:
   l2_data_2:
+  l2_data_peptide:
   op_log:
 
 services:
@@ -73,6 +74,18 @@ services:
       - '--authrpc.jwtsecret=/config/test-jwt-secret.txt'
     environment:
       GETH_MINER_RECOMMIT: 100ms
+
+  op-peptide:
+    image: peptide:devnet
+    ports:
+      - '26657:26657'
+      - '9547:8545'
+    volumes:
+      - 'l2_data_peptide:/home/peptide/.peptide'
+    command: >
+      start
+      --ee-http-server-address=0.0.0.0:8545
+      --app-rpc-address=0.0.0.0:26657
 
   op-node-1:
     depends_on:
@@ -168,6 +181,53 @@ services:
       - '${PWD}/../.devnet/rollup.json:/rollup.json'
       - op_log:/op_log
 
+  op-node-polymer:
+    depends_on:
+      # - op_stack_go_builder
+      - l1
+      - op-peptide
+    build:
+      context: ../
+      dockerfile: ./op-node/Dockerfile
+      args:
+        OP_STACK_GO_BUILDER: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-stack-go:devnet
+    # image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.2.0
+    command: >
+      op-node
+      --l1=ws://l1:8546
+      --l2=http://op-peptide:8545
+      --l2.jwt-secret=/config/test-jwt-secret.txt
+      --sequencer.enabled
+      --sequencer.l1-confs=0
+      --verifier.l1-confs=0
+      --p2p.sequencer.key=8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba
+      --rollup.config=/rollup.json
+      --rpc.addr=0.0.0.0
+      --rpc.port=8545
+      --p2p.listen.ip=0.0.0.0
+      --p2p.listen.tcp=9003
+      --p2p.listen.udp=9003
+      --p2p.scoring.peers=light
+      --p2p.ban.peers=true
+      --snapshotlog.file=/op_log/snapshot.log
+      --p2p.priv.path=/config/p2p-node-key.txt
+      --metrics.enabled
+      --metrics.addr=0.0.0.0
+      --metrics.port=7300
+      --pprof.enabled
+      --rpc.enable-admin
+    ports:
+      - '7547:8545'
+      - '9005:9003'
+      - '7302:7300'
+      - '6062:6060'
+    volumes:
+      - '${PWD}/p2p-sequencer-key.txt:/config/p2p-sequencer-key.txt'
+      - '${PWD}/p2p-node-key.txt:/config/p2p-node-key.txt'
+      - '${PWD}/test-jwt-secret.txt:/config/test-jwt-secret.txt'
+      - '${PWD}/../.devnet/rollup.json:/rollup.json'
+      - op_log:/op_log
+
   op-proposer-1:
     depends_on:
       # - op_stack_go_builder
@@ -214,6 +274,34 @@ services:
     environment:
       OP_PROPOSER_L1_ETH_RPC: http://l1:8545
       OP_PROPOSER_ROLLUP_RPC: http://op-node-2:8545
+      OP_PROPOSER_POLL_INTERVAL: 1s
+      OP_PROPOSER_NUM_CONFIRMATIONS: 1
+      OP_PROPOSER_MNEMONIC: test test test test test test test test test test test junk
+      OP_PROPOSER_L2_OUTPUT_HD_PATH: "m/44'/60'/0'/0/1"
+      OP_PROPOSER_L2OO_ADDRESS: '${L2OO_ADDRESS}'
+      OP_PROPOSER_PPROF_ENABLED: 'true'
+      OP_PROPOSER_METRICS_ENABLED: 'true'
+      OP_PROPOSER_ALLOW_NON_FINALIZED: 'true'
+      OP_PROPOSER_RPC_ENABLE_ADMIN: 'true'
+
+  op-proposer-polymer:
+    depends_on:
+      # - op_stack_go_builder
+      - l1
+      - op-node-polymer
+    build:
+      context: ../
+      dockerfile: ./op-proposer/Dockerfile
+      args:
+        OP_STACK_GO_BUILDER: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-stack-go:devnet
+    # image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.2.0
+    ports:
+      - '6064:6060'
+      - '7304:7300'
+      - '6548:8545'
+    environment:
+      OP_PROPOSER_L1_ETH_RPC: http://l1:8545
+      OP_PROPOSER_ROLLUP_RPC: http://op-node-polymer:8545
       OP_PROPOSER_POLL_INTERVAL: 1s
       OP_PROPOSER_NUM_CONFIRMATIONS: 1
       OP_PROPOSER_MNEMONIC: test test test test test test test test test test test junk
@@ -283,6 +371,46 @@ services:
       OP_BATCHER_METRICS_ENABLED: 'true'
       OP_BATCHER_RPC_ENABLE_ADMIN: 'true'
       OP_BATCHER_BATCH_TYPE: 0
+
+  op-batcher-polymer:
+    depends_on:
+      # - op_stack_go_builder
+      - l1
+      - op-node-polymer
+    build:
+      context: ../
+      dockerfile: ./op-batcher/Dockerfile
+      args:
+        OP_STACK_GO_BUILDER: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-stack-go:devnet
+    # image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.2.0
+    ports:
+      - '6083:6060'
+      - '7323:7300'
+      - '6567:8545'
+    environment:
+      OP_BATCHER_L1_ETH_RPC: http://l1:8545
+      OP_BATCHER_L2_ETH_RPC: http://op-peptide:8545
+      OP_BATCHER_ROLLUP_RPC: http://op-node-polymer:8545
+      OP_BATCHER_MAX_CHANNEL_DURATION: 1
+      OP_BATCHER_SUB_SAFETY_MARGIN: 4 # SWS is 15, ChannelTimeout is 40
+      OP_BATCHER_POLL_INTERVAL: 1s
+      OP_BATCHER_NUM_CONFIRMATIONS: 1
+      OP_BATCHER_MNEMONIC: test test test test test test test test test test test junk
+      OP_BATCHER_SEQUENCER_HD_PATH: "m/44'/60'/0'/0/2"
+      OP_BATCHER_PPROF_ENABLED: 'true'
+      OP_BATCHER_METRICS_ENABLED: 'true'
+      OP_BATCHER_RPC_ENABLE_ADMIN: 'true'
+      OP_BATCHER_BATCH_TYPE: 0
+
+  # op-relayer:
+  #   depends_on:
+  #     - op-node-1
+  #     - op-node-2
+  #     - op-node-polymer
+  #   image: oprelayer:devnet
+  #   ports:
+  #     - '4001:4001'
+  #   environment:
 
   artifact-server:
     depends_on:
