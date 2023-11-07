@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	bfttypes "github.com/cometbft/cometbft/types"
-	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -100,34 +99,6 @@ func (b *Block) Hash() Hash {
 
 func (b *Block) ParentHash() Hash {
 	return b.ParentBlockHash
-}
-
-// ToL2BlockRef converts a non-genesis Block to an L2BlockRef.
-//
-// Genesis block does not have L1 info deposit tx, so it cannot be converted to an L2BlockRef. Instead EngineQueue of
-// `op-node` will use RollupConfig to determine the L1Origin of the genesis block.
-func (b *Block) ToL2BlockRef() (*L2BlockRef, error) {
-	// TODO: handle empty L1Txs in genesis block
-	if len(b.L1Txs) == 0 {
-		return nil, fmt.Errorf("L2 block is missing L1 info deposit tx, block hash: %s", b.Hash())
-	}
-	var tx types.Transaction
-	if err := tx.UnmarshalBinary(b.L1Txs[0]); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal first L2 tx into a L1 deposit tx, block hash: %s, err: %v", b.Hash(), err)
-	}
-	info, err := derive.L1InfoDepositTxData(tx.Data())
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse deposit tx's Data into L1BlockInfo, block hash: %s, err: %v", b.Hash(), err)
-	}
-
-	return &L2BlockRef{
-		Hash:           b.Hash(),
-		Number:         uint64(b.Height()),
-		ParentHash:     b.ParentHash(),
-		Time:           b.Time(),
-		SequenceNumber: info.SequenceNumber,
-		L1Origin:       BlockID{Hash: info.BlockHash, Number: info.Number},
-	}, nil
 }
 
 // ExecutionPayload is an ethereum type with data that our block is missing.
