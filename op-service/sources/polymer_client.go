@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	eetypes "github.com/polymerdao/polymerase/types"
 )
 
 // PolymerClient is a L2ClientGeneric implementation that interacts with the Polymer's ABCI app as an L2 Execution
@@ -85,7 +84,7 @@ func (p *PolymerClient) ChainID(ctx context.Context) (*big.Int, error) {
 }
 
 func (p *PolymerClient) BlockByNumber(ctx context.Context, number *big.Int) (eth.EthBlock, error) {
-	var block eetypes.Block
+	var block eth.Block
 	err := p.client.CallContext(ctx, &block, "ee_getBlockByNumber", toValidNum(number))
 	return &block, err
 }
