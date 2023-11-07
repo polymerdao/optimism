@@ -127,7 +127,6 @@ func (b *Block) ToL2BlockRef() (*L2BlockRef, error) {
 		Time:           b.Time(),
 		SequenceNumber: info.SequenceNumber,
 		L1Origin:       BlockID{Hash: info.BlockHash, Number: info.Number},
-		Transactions:   b.L1Txs,
 	}, nil
 }
 
