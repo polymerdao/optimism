@@ -154,14 +154,13 @@ func (b *Block) Transactions() types.Transactions {
 }
 
 func (b *Block) Populate(block EthBlock) {
-	//	b.Header = &Header{
-	//		Height:  block.NumberU64(),
-	//		ChainID: block.ChainID().String(),
-	//		Time:    block.Time(),
-	//	}
-	b.ParentBlockHash = block.ParentHash()
-	//	b.L1Txs = block.Transactions()
-	//	b.GasLimit = &hexutil.Uint64{Uint64: block.GasLimit()}
+	// TODO: use the interface to populate the block
+	blockCoerced := block.(*Block)
+	b.Txs = blockCoerced.Txs
+	b.Header = blockCoerced.Header
+	b.ParentBlockHash = blockCoerced.ParentBlockHash
+	b.L1Txs = blockCoerced.L1Txs
+	b.GasLimit = blockCoerced.GasLimit
 }
 
 // This is only a representation of the block from the block-store point of view
