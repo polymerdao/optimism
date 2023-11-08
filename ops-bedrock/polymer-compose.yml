@@ -225,7 +225,7 @@ services:
       - '${PWD}/p2p-sequencer-key.txt:/config/p2p-sequencer-key.txt'
       - '${PWD}/p2p-node-key.txt:/config/p2p-node-key.txt'
       - '${PWD}/test-jwt-secret.txt:/config/test-jwt-secret.txt'
-      - '${PWD}/../.devnet/rollup.json:/rollup.json'
+      - '${PWD}/../.devnet/peptide-rollup.json:/rollup.json'
       - op_log:/op_log
 
   op-proposer-1:
@@ -240,8 +240,8 @@ services:
     #     OP_STACK_GO_BUILDER: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-stack-go:devnet
     image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.2.0
     ports:
-      - '6062:6060'
-      - '7302:7300'
+      - '6162:6060'
+      - '7312:7300'
       - '6546:8545'
     environment:
       OP_PROPOSER_L1_ETH_RPC: http://l1:8545
@@ -268,8 +268,8 @@ services:
     #     OP_STACK_GO_BUILDER: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-stack-go:devnet
     image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.2.0
     ports:
-      - '6063:6060'
-      - '7303:7300'
+      - '6163:6060'
+      - '7313:7300'
       - '6547:8545'
     environment:
       OP_PROPOSER_L1_ETH_RPC: http://l1:8545
@@ -296,8 +296,8 @@ services:
         OP_STACK_GO_BUILDER: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-stack-go:devnet
     # image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.2.0
     ports:
-      - '6064:6060'
-      - '7304:7300'
+      - '6164:6060'
+      - '7314:7300'
       - '6548:8545'
     environment:
       OP_PROPOSER_L1_ETH_RPC: http://l1:8545
@@ -402,16 +402,22 @@ services:
       OP_BATCHER_RPC_ENABLE_ADMIN: 'true'
       OP_BATCHER_BATCH_TYPE: 0
 
-  # op-relayer:
-  #   depends_on:
-  #     - op-node-1
-  #     - op-node-2
-  #     - op-node-polymer
-  #   image: oprelayer:devnet
-  #   ports:
-  #     - '4001:4001'
-  #   environment:
-
+  op-relayer:
+    depends_on:
+      - op-node-1
+      - op-node-2
+      - op-node-polymer
+    image: oprelayer:devnet
+    ports:
+      - '4001:4001'
+    environment:
+      OP_GETH_RPC_ENDPOINT_1: 'http://op-geth-1:8545'
+      OP_GETH_RPC_ENDPOINT_2: 'http://op-geth-2:8545'
+      POLYMER_RPC_ENDPOINT: 'tcp://op-peptide:8545'
+      CHAINID_1: '901'
+      CHAINID_2: '901'
+      DISPATCHER_ADDRESS_1: '0x0'
+      DISPATCHER_ADDRESS_2: '0x0'
   artifact-server:
     depends_on:
       - l1
