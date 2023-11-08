@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ethereum-optimism/optimism/op-service/peptide"
+	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"math/big"
 	"time"
 
@@ -62,7 +62,7 @@ type EthLikeClient interface {
 
 type L2LikeClient interface {
 	TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
-	BlockByNumber(ctx context.Context, number *big.Int) (peptide.EthBlock, error)
+	BlockByNumber(ctx context.Context, number *big.Int) (eth.EthBlock, error)
 }
 
 func WaitForTransaction(hash common.Hash, client EthLikeClient, timeout time.Duration) (*types.Receipt, error) {

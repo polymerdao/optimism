@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"context"
-	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/log"
@@ -30,8 +29,8 @@ type Metricer interface {
 	RecordL2BlocksLoaded(l2ref eth.L2BlockRef)
 	RecordChannelOpened(id derive.ChannelID, numPendingBlocks int)
 	RecordL2BlocksAdded(l2ref eth.L2BlockRef, numBlocksAdded, numPendingBlocks, inputBytes, outputComprBytes int)
-	RecordL2BlockInPendingQueue(block peptide.EthBlock)
-	RecordL2BlockInChannel(block peptide.EthBlock)
+	RecordL2BlockInPendingQueue(block eth.EthBlock)
+	RecordL2BlockInChannel(block eth.EthBlock)
 	RecordChannelClosed(id derive.ChannelID, numPendingBlocks int, numFrames int, inputBytes int, outputComprBytes int, reason error)
 	RecordChannelFullySubmitted(id derive.ChannelID)
 	RecordChannelTimedOut(id derive.ChannelID)
@@ -259,13 +258,13 @@ func (m *Metrics) RecordChannelClosed(id derive.ChannelID, numPendingBlocks int,
 	m.channelClosedReason.Set(float64(ClosedReasonToNum(reason)))
 }
 
-func (m *Metrics) RecordL2BlockInPendingQueue(block peptide.EthBlock) {
+func (m *Metrics) RecordL2BlockInPendingQueue(block eth.EthBlock) {
 	size := float64(estimateBatchSize(block))
 	m.pendingBlocksBytesTotal.Add(size)
 	m.pendingBlocksBytesCurrent.Add(size)
 }
 
-func (m *Metrics) RecordL2BlockInChannel(block peptide.EthBlock) {
+func (m *Metrics) RecordL2BlockInChannel(block eth.EthBlock) {
 	size := float64(estimateBatchSize(block))
 	m.pendingBlocksBytesCurrent.Add(-1 * size)
 	// Refer to RecordL2BlocksAdded to see the current + count of bytes added to a channel
@@ -297,7 +296,7 @@ func (m *Metrics) RecordBatchTxFailed() {
 }
 
 // estimateBatchSize estimates the size of the batch
-func estimateBatchSize(block peptide.EthBlock) uint64 {
+func estimateBatchSize(block eth.EthBlock) uint64 {
 	size := uint64(70) // estimated overhead of batch metadata
 	for _, tx := range block.Transactions() {
 		// Don't include deposit transactions in the batch.

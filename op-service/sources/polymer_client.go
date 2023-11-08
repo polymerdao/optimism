@@ -6,7 +6,6 @@ import (
 
 	"github.com/ethereum-optimism/optimism/op-service/client"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
-	"github.com/ethereum-optimism/optimism/op-service/peptide"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -60,14 +59,14 @@ func (p *PolymerClient) PayloadByHash(ctx context.Context, hash common.Hash) (*e
 	return payload, err
 }
 
-func (p *PolymerClient) InfoByHash(ctx context.Context, hash common.Hash) (eth.BlockInfo, error) {
-	var info eth.BlockInfo
+func (p *PolymerClient) InfoByHash(ctx context.Context, hash common.Hash) (eth.RootBlockInfo, error) {
+	var info *eth.PolymerBlockInfo
 	err := p.client.CallContext(ctx, &info, "ee_getInfoByHash", hash)
 	return info, err
 }
 
-func (p *PolymerClient) GetProof(ctx context.Context, address common.Address, storage []common.Hash, blockTag string) (*eth.AccountResult, error) {
-	var result *eth.AccountResult
+func (p *PolymerClient) GetProof(ctx context.Context, address common.Address, storage []common.Hash, blockTag string) (eth.Proof, error) {
+	var result *eth.PolymerAccountResult
 	err := p.client.CallContext(ctx, &result, "ee_getProof", address, storage, blockTag)
 	return result, err
 }
@@ -84,8 +83,8 @@ func (p *PolymerClient) ChainID(ctx context.Context) (*big.Int, error) {
 	return chainID, err
 }
 
-func (p *PolymerClient) BlockByNumber(ctx context.Context, number *big.Int) (peptide.EthBlock, error) {
-	var block peptide.Block
+func (p *PolymerClient) BlockByNumber(ctx context.Context, number *big.Int) (eth.EthBlock, error) {
+	var block eth.Block
 	err := p.client.CallContext(ctx, &block, "ee_getBlockByNumber", toValidNum(number))
 	return &block, err
 }
