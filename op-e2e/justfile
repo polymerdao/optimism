@@ -16,7 +16,7 @@ build-op-batcher:
 # Can add extra flags to go test, e.g. `just test-polymer -v -count=1`
 # test polymer peptide execution engine; need to `just build-polymer` first if it changes or has not been built
 test-polymer *GO_TEST_FLAGS: build-polymer
-    go test {{go_test_flags}} --externalL2 {{WD}} -run TestSystemE2E {{GO_TEST_FLAGS}}
+    go test {{go_test_flags}} --externalL2 {{WD}} -run TestSystemE2E TestConfirmationDepth TestFinalization {{GO_TEST_FLAGS}}
 
 test-polymer-shim *GO_TEST_FLAGS: build-polymer
     cd {{WD}} && go test ./... -v
