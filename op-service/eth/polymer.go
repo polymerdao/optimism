@@ -32,7 +32,6 @@ type Header struct {
 	ValidatorsHash     Bytes `json:"validators_hash"`      // validators for the current block
 	NextValidatorsHash Bytes `json:"next_validators_hash"` // validators for the next block
 	ConsensusHash      Bytes `json:"consensus_hash"`       // consensus params for current block
-	AppHash            Bytes `json:"app_hash"`             // state after txs from the previous block
 	// root hash of all results from the txs from the previous block
 	LastResultsHash Bytes `json:"last_results_hash"`
 
@@ -50,7 +49,6 @@ func (h *Header) Populate(cosmosHeader *tmproto.Header) *Header {
 	h.ValidatorsHash = cosmosHeader.ValidatorsHash
 	h.NextValidatorsHash = cosmosHeader.NextValidatorsHash
 	h.ConsensusHash = cosmosHeader.ConsensusHash
-	h.AppHash = cosmosHeader.AppHash
 	h.LastResultsHash = cosmosHeader.LastResultsHash
 	h.EvidenceHash = cosmosHeader.EvidenceHash
 	return h
