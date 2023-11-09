@@ -9,6 +9,7 @@ import (
 
 	e2e "github.com/ethereum-optimism/optimism/op-e2e"
 	"github.com/ethereum-optimism/optimism/op-e2e/config"
+	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 )
@@ -27,6 +28,11 @@ func TestShim(t *testing.T) {
 	ec := (&e2e.ExternalRunner{
 		Name:    "TestShim",
 		BinPath: shimPath,
+		L1: eth.BlockID{
+			Hash:   common.HexToHash("0x1234"),
+			Number: 0,
+		},
+		L2Time: uint64(time.Now().Unix()),
 	}).Run(t)
 	t.Cleanup(func() { _ = ec.Close() })
 
