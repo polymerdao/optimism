@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -9,12 +10,13 @@ import (
 	"os/signal"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/ethereum-optimism/optimism/op-e2e/external"
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 )
@@ -56,8 +58,17 @@ func run(configPath string) error {
 		return fmt.Errorf("could not locate op-polymer in working directory")
 	}
 
-	fmt.Printf("==================    op-polymer shim executing op-polymer     ==========================\n")
-	sess, err := execute(binPath)
+	fmt.Printf("================== op-polymer shim initializing chain config ==========================\n")
+	if err := initialize(binPath, config); err != nil {
+		return fmt.Errorf("could not initialize datadir: %s %w", binPath, err)
+	}
+
+	fmt.Printf("================== op-polymer shim sealing chain ==========================\n")
+	if err := seal(binPath, config); err != nil {
+		return fmt.Errorf("could not seal datadir: %s %w", binPath, err)
+	}
+
+	sess, err := execute(binPath, config)
 	if err != nil {
 		return fmt.Errorf("could not execute polymer: %w", err)
 	}
@@ -85,6 +96,33 @@ func run(configPath string) error {
 	}
 }
 
+func initialize(binPath string, config external.Config) error {
+	cmd := exec.Command(
+		binPath,
+		"init",
+		"--home", config.DataDir,
+		"--l1-hash", config.L1Hash,
+		"--l1-height", fmt.Sprintf("%d", config.L1Height),
+	)
+	return cmd.Run()
+}
+
+func seal(binPath string, config external.Config) error {
+	var outb, errb bytes.Buffer
+	cmd := exec.Command(
+		binPath,
+		"seal",
+		"--home", config.DataDir,
+		"--genesis-time", fmt.Sprintf("%d", config.L2Time),
+	)
+	cmd.Stdout = &outb
+	cmd.Stderr = &errb
+	err := cmd.Run()
+	fmt.Printf("%v\n", outb.String())
+	fmt.Printf("%v\n", errb.String())
+	return err
+}
+
 type gethSession struct {
 	session   *gexec.Session
 	endpoints *external.Endpoints
@@ -99,18 +137,20 @@ func (es *gethSession) Close() {
 	}
 }
 
-func execute(binPath string) (*gethSession, error) {
-	cmd := exec.Command(binPath, "start", "--app-rpc-address", "localhost:0", "--ee-http-server-address", "localhost:0", "--db-backend", "memdb")
+func execute(binPath string, config external.Config) (*gethSession, error) {
+	cmd := exec.Command(binPath, "start",
+		"--app-rpc-address", "localhost:0",
+		"--ee-http-server-address", "localhost:0",
+		"--home", config.DataDir,
+	)
 	sess, err := gexec.Start(cmd, os.Stdout, os.Stderr)
 	if err != nil {
 		return nil, fmt.Errorf("could not start op-polymer session: %w", err)
 	}
 	matcher := gbytes.Say("Execution engine rpc server enabled")
 	var httpUrl, wsUrl string
-	var hash common.Hash
 	urlRE := regexp.MustCompile(`Execution engine rpc server enabled\s+http=(.+)\sws=(.+)`)
-	genesisBlockRE := regexp.MustCompile(`\shash=(\w+)`)
-	for (httpUrl == "" && wsUrl == "" && hash == common.Hash{}) {
+	for httpUrl == "" && wsUrl == "" {
 		match, err := matcher.Match(sess.Out)
 		if err != nil {
 			return nil, fmt.Errorf("could not execute matcher")
@@ -131,23 +171,30 @@ func execute(binPath string) (*gethSession, error) {
 				wsUrl = found[2]
 				continue
 			}
-
-			found = genesisBlockRE.FindStringSubmatch(line)
-			if len(found) == 2 {
-				hash = common.HexToHash(found[1])
-				continue
-			}
 		}
+	}
+
+	genesisFile, err := os.Open(filepath.Join(config.DataDir, "config", "genesis.json"))
+	if err != nil {
+		return nil, fmt.Errorf("could not open genesis file: %w", err)
+	}
+
+	var genesis struct {
+		GenesisBlock eth.BlockID `json:"genesis_block"`
+	}
+	if err := json.NewDecoder(genesisFile).Decode(&genesis); err != nil {
+		return nil, fmt.Errorf("could not decode genesis file: %w", err)
 	}
 
 	return &gethSession{
 		session: sess,
 		endpoints: &external.Endpoints{
-			HTTPEndpoint:     httpUrl,
-			WSEndpoint:       wsUrl,
-			HTTPAuthEndpoint: httpUrl,
-			WSAuthEndpoint:   wsUrl,
-			GenesisBlockHash: hash.Hex(),
+			HTTPEndpoint:       httpUrl,
+			WSEndpoint:         wsUrl,
+			HTTPAuthEndpoint:   httpUrl,
+			WSAuthEndpoint:     wsUrl,
+			GenesisBlockHash:   genesis.GenesisBlock.Hash.Hex(),
+			GenesisBlockHeight: strconv.FormatUint(genesis.GenesisBlock.Number, 10),
 		},
 	}, nil
 }
