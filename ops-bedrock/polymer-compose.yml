@@ -416,8 +416,8 @@ services:
       POLYMER_RPC_ENDPOINT: 'tcp://op-peptide:8545'
       CHAINID_1: '901'
       CHAINID_2: '901'
-      DISPATCHER_ADDRESS_1: '0x0'
-      DISPATCHER_ADDRESS_2: '0x0'
+      DISPATCHER_ADDRESS_1: '${DISPATCHER_ADDRESS_1}'
+      DISPATCHER_ADDRESS_2: '${DISPATCHER_ADDRESS_2}'
   artifact-server:
     depends_on:
       - l1
