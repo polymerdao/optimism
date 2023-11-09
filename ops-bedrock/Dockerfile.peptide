@@ -1,0 +1,8 @@
+# TODO update this to a public image
+FROM peptide:devnet
+
+RUN apk add --no-cache jq
+
+COPY entrypoint-peptide.sh /entrypoint.sh
+
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
