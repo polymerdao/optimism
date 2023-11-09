@@ -232,8 +232,18 @@ def devnet_deploy(paths):
     rollup_config = read_json(paths.rollup_config_path)
     addresses = read_json(paths.addresses_json_path)
 
-    log.info('Bringing up L2.')
-    # 'op-geth-2'
+    log.info(rollup_config['genesis']['l1']['hash'])
+    log.info('Initialize Peptide')
+    # run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-peptide-init'],
+    #     cwd=paths.ops_bedrock_dir,
+    #     env={
+    #         'PWD': paths.ops_bedrock_dir,
+    #         'GENESIS_HASH': 'hello world' # rollup_config['genesis']['l1']['hash']
+    # })
+
+
+    log.info('Bringing up L2 chains.')
+    # 'op-peptide'
     run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-geth-1', 'op-geth-2', 'op-peptide'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir
     })
@@ -244,17 +254,17 @@ def devnet_deploy(paths):
     wait_for_rpc_server('127.0.0.1:9546')
     wait_for_rpc_server('127.0.0.1:9547')
 
-    # NOTE: temporary workaround for Peptide genesis hash issue
-    run_command([
-         'ops-bedrock/fix-genesis-hash.sh'
-     ])
+    # # NOTE: temporary workaround for Peptide genesis hash issue
+    # run_command([
+    #      'ops-bedrock/fix-genesis-hash.sh'
+    #  ])
 
     l2_output_oracle = addresses['L2OutputOracleProxy']
     log.info(f'Using L2OutputOracle {l2_output_oracle}')
     batch_inbox_address = rollup_config['batch_inbox_address']
     log.info(f'Using batch inbox {batch_inbox_address}')
 
-    log.info('Bringing up everything else.')
+    log.info('Bringing up rest of OP stack.')
     #
     run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-node-1', 'op-proposer-1', 'op-batcher-1', 'op-node-2', 'op-proposer-2', 'op-batcher-2', 'op-node-polymer', 'op-proposer-polymer', 'op-batcher-polymer'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir,
@@ -298,8 +308,8 @@ def devnet_deploy(paths):
         'docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-relayer'
     ], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir,
-        'DISPATCHER_ADDRESS_1': polymer_l2_config_1.polymer_dispatcher_address,
-        'DISPATCHER_ADDRESS_2': polymer_l2_config_2.polymer_dispatcher_address
+        'DISPATCHER_ADDRESS_1': polymer_l2_config_1["polymer_dispatcher_address"],
+        'DISPATCHER_ADDRESS_2': polymer_l2_config_2["polymer_dispatcher_address"]
     })
 
     log.info('Devnet ready.')

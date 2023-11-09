@@ -75,13 +75,27 @@ services:
     environment:
       GETH_MINER_RECOMMIT: 100ms
 
+  # initialize peptide chain
+  op-peptide-init:
+    build:
+      context: .
+      dockerfile: Dockerfile.peptide
+    volumes:
+      - 'l2_data_peptide:/root/.peptide'
+      - '${PWD}/../.devnet/rollup.json:/rollup.json'
+    entrypoint:
+      - '/bin/sh'
+      - '/entrypoint.sh'
+
   op-peptide:
+    depends_on:
+      - op-peptide-init
     image: peptide:devnet
     ports:
       - '26657:26657'
       - '9547:8545'
     volumes:
-      - 'l2_data_peptide:/home/peptide/.peptide'
+      - 'l2_data_peptide:/root/.peptide'
     command: >
       start
       --ee-http-server-address=0.0.0.0:8545
@@ -225,7 +239,7 @@ services:
       - '${PWD}/p2p-sequencer-key.txt:/config/p2p-sequencer-key.txt'
       - '${PWD}/p2p-node-key.txt:/config/p2p-node-key.txt'
       - '${PWD}/test-jwt-secret.txt:/config/test-jwt-secret.txt'
-      - '${PWD}/../.devnet/peptide-rollup.json:/rollup.json'
+      - '${PWD}/../.devnet/rollup.json:/rollup.json'
       - op_log:/op_log
 
   op-proposer-1:
@@ -407,13 +421,13 @@ services:
       - op-node-1
       - op-node-2
       - op-node-polymer
-    image: oprelayer:devnet
+    image: op-relayer:devnet
     ports:
       - '4001:4001'
     environment:
-      OP_GETH_RPC_ENDPOINT_1: 'http://op-geth-1:8545'
-      OP_GETH_RPC_ENDPOINT_2: 'http://op-geth-2:8545'
-      POLYMER_RPC_ENDPOINT: 'tcp://op-peptide:8545'
+      RPC_ENDPOINT_1: http://op-geth-1:8545/
+      RPC_ENDPOINT_2: http://op-geth-2:8545/
+      POLYMER_RPC_ENDPOINT: tcp://op-peptide:26657/
       CHAINID_1: '901'
       CHAINID_2: '901'
       DISPATCHER_ADDRESS_1: '${DISPATCHER_ADDRESS_1}'
