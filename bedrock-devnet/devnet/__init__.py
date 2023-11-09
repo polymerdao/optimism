@@ -87,7 +87,9 @@ def main():
         allocs_path=pjoin(devnet_dir, 'allocs-l1.json'),
         addresses_json_path=pjoin(devnet_dir, 'addresses.json'),
         sdk_addresses_json_path=pjoin(devnet_dir, 'sdk-addresses.json'),
-        rollup_config_path=pjoin(devnet_dir, 'rollup.json')
+        rollup_config_path=pjoin(devnet_dir, 'rollup.json'),
+        polymer_l2_config_1=pjoin(devnet_dir, 'polymer-l2-1.json'),
+        polymer_l2_config_2=pjoin(devnet_dir, 'polymer-l2-2.json')
     )
 
     if args.test:
@@ -260,14 +262,45 @@ def devnet_deploy(paths):
         'SEQUENCER_BATCH_INBOX_ADDRESS': batch_inbox_address
     })
 
-    # TODO: deploy contracts
+    # deploy Polymer contracts to L2-1
+    log.info('Deploying Polymer VIBC contracts to L2-1')
+    run_command([
+        'sh',
+        'deploy-vibc-contracts.sh',
+        'http://127.0.0.1:9545',
+        'polyibc.op1',
+        paths.polymer_l2_config_1
+    ],
+    cwd=paths.ops_bedrock_dir,
+    env={
+        'PWD': paths.contracts_bedrock_dir
+    })
 
-    # log.info('Bringing up op-relayer.')
-    # run_command([
-    #     'docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-relayer'
-    # ], cwd=paths.ops_bedrock_dir, env={
-    #     'PWD': paths.ops_bedrock_dir
-    # })
+    # deploy Polymer contracts to L2-2
+    log.info('Deploying Polymer VIBC contracts to L2-2')
+    run_command([
+        'sh',
+        'deploy-vibc-contracts.sh',
+        'http://127.0.0.1:9546',
+        'polyibc.op2',
+        paths.polymer_l2_config_2
+    ],
+    cwd=paths.ops_bedrock_dir,
+    env={
+        'PWD': paths.contracts_bedrock_dir
+    })
+
+    polymer_l2_config_1 = read_json(paths.polymer_l2_config_1)
+    polymer_l2_config_2 = read_json(paths.polymer_l2_config_2)
+
+    log.info('Bringing up op-relayer.')
+    run_command([
+        'docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-relayer'
+    ], cwd=paths.ops_bedrock_dir, env={
+        'PWD': paths.ops_bedrock_dir,
+        'DISPATCHER_ADDRESS_1': polymer_l2_config_1.polymer_dispatcher_address,
+        'DISPATCHER_ADDRESS_2': polymer_l2_config_2.polymer_dispatcher_address
+    })
 
     log.info('Devnet ready.')
 
