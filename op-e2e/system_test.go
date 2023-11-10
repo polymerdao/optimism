@@ -139,7 +139,7 @@ func TestSystemE2E(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	startBalance, err := l2Seq.BalanceAt(ctx, fromAddr, nil)
+	startBalance, err := l2Verif.BalanceAt(ctx, fromAddr, nil)
 	require.Nil(t, err)
 	t.Logf("starting balance %s: %d", fromAddr, startBalance)
 
@@ -148,13 +148,13 @@ func TestSystemE2E(t *testing.T) {
 	require.Nil(t, err)
 	mintAmount := big.NewInt(1_000_000_000_000)
 	opts.Value = mintAmount
-	SendDepositTx(t, cfg, l1Client, l2Seq, opts, func(l2Opts *DepositTxOpts) {})
+	SendDepositTx(t, cfg, l1Client, l2Verif, opts, func(l2Opts *DepositTxOpts) {})
 
 	// Confirm balance
 	ctx, cancel = context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	t.Logf("query balance for Alice %s", fromAddr.String())
-	endBalance, err := l2Seq.BalanceAt(ctx, fromAddr, nil)
+	endBalance, err := l2Verif.BalanceAt(ctx, fromAddr, nil)
 	if err != nil {
 		t.Logf("error querying balance for Alice %s: %s", fromAddr.String(), err)
 	} else {
