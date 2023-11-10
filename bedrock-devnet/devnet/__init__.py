@@ -232,15 +232,11 @@ def devnet_deploy(paths):
     rollup_config = read_json(paths.rollup_config_path)
     addresses = read_json(paths.addresses_json_path)
 
-    log.info(rollup_config['genesis']['l1']['hash'])
     log.info('Initialize Peptide')
-    # run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-peptide-init'],
-    #     cwd=paths.ops_bedrock_dir,
-    #     env={
-    #         'PWD': paths.ops_bedrock_dir,
-    #         'GENESIS_HASH': 'hello world' # rollup_config['genesis']['l1']['hash']
-    # })
-
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-peptide-init'],
+        cwd=paths.ops_bedrock_dir, env={
+            'PWD': paths.ops_bedrock_dir,
+    })
 
     log.info('Bringing up L2 chains.')
     # 'op-peptide'
@@ -254,10 +250,10 @@ def devnet_deploy(paths):
     wait_for_rpc_server('127.0.0.1:9546')
     wait_for_rpc_server('127.0.0.1:9547')
 
-    # # NOTE: temporary workaround for Peptide genesis hash issue
-    # run_command([
-    #      'ops-bedrock/fix-genesis-hash.sh'
-    #  ])
+    # NOTE: temporary workaround for Peptide genesis hash issue
+    run_command([
+         'ops-bedrock/fix-genesis-hash.sh'
+     ])
 
     l2_output_oracle = addresses['L2OutputOracleProxy']
     log.info(f'Using L2OutputOracle {l2_output_oracle}')
