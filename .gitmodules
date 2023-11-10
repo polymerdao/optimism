@@ -17,6 +17,7 @@
 	path = packages/contracts-bedrock/lib/safe-contracts
 	url = https://github.com/safe-global/safe-contracts
 	branch = v1.4.0
-
-
-
+[submodule "ops-bedrock/vibc-core-smart-contracts"]
+	path = ops-bedrock/vibc-core-smart-contracts
+	url = git@github.com:open-ibc/vibc-core-smart-contracts.git
+	branch = v0.0.14
