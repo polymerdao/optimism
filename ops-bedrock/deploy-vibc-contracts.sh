@@ -29,8 +29,10 @@ ESCROW_CONTRACT_ADDRESS=$(forge create --json --rpc-url "${RPC_URL}" --private-k
 VERIFIER_CONTRACT_ADDRESS=$(forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/DummyVerifier.sol:DummyVerifier | jq -r .deployedTo)
 OP_CONSENSUS_STATE_MANAGER_ADDRESS=$(forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/OpConsensusStateManager.sol:OptimisticConsensusStateManager --constructor-args "100" "${ESCROW_CONTRACT_ADDRESS}" | jq -r .deployedTo)
 DISPATCHER_CONTRACT_ADDRESS=$(forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/Dispatcher.sol:Dispatcher --constructor-args "${VERIFIER_CONTRACT_ADDRESS}" "${ESCROW_CONTRACT_ADDRESS}" "${PORT_PREFIX}" "${OP_CONSENSUS_STATE_MANAGER_ADDRESS}" | jq -r .deployedTo)
+MARS_CONTRACT_ADDRESS=$(forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/Mars.sol:Mars | jq -r .deployedTo)
 
 echo "{}" | jq ".polymer_escrow_address=\"${ESCROW_CONTRACT_ADDRESS}\" |
     .polymer_verifier_address=\"${VERIFIER_CONTRACT_ADDRESS}\" |
     .op_consensus_state_manager_address=\"${OP_CONSENSUS_STATE_MANAGER_ADDRESS}\" |
+    .mars_address=\"${MARS_CONTRACT_ADDRESS}\" |
     .polymer_dispatcher_address=\"${DISPATCHER_CONTRACT_ADDRESS}\"" | tee "${POLYMER_JSON}"
