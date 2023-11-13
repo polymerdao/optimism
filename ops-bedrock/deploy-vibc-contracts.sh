@@ -37,7 +37,7 @@ VERIFIER_CONTRACT_ADDRESS="$(
 OP_CONSENSUS_STATE_MANAGER_ADDRESS="$(
 	forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" \
 		 contracts/OpConsensusStateManager.sol:OptimisticConsensusStateManager \
-	   --constructor-args 100 "${ESCROW_CONTRACT_ADDRESS}" | \
+	   --constructor-args 100 "${VERIFIER_CONTRACT_ADDRESS}" | \
 	jq -r .deployedTo
 )"
 DISPATCHER_CONTRACT_ADDRESS="$(
