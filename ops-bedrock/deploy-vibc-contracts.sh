@@ -1,9 +1,10 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Helper script to deploy Polymer smart contracts and update the rollup.json as part of private testnet setup.
 
-set -e -x
+set -xeuo pipefail
 
+# $PWD is set by the caller python script
 cd "${PWD}"
 
 VIBC_VERSION='v0.0.14'
@@ -17,20 +18,48 @@ POLYMER_JSON="${3}"   # example: polymer-l2-1.json
 # download contracts if needed
 if [ ! -e "${CONTRACTS_DIR}" ]; then
     git clone --depth 1 --branch "${VIBC_VERSION}" https://github.com/open-ibc/vibc-core-smart-contracts \
-    && cd vibc-core-smart-contracts \
+    && pushd vibc-core-smart-contracts \
     && git submodule update --init --recursive \
     && npm install \
-    && cd ..
+    && popd
 fi
 
 # deploy contracts on OP chain 1
-cd vibc-core-smart-contracts
-ESCROW_CONTRACT_ADDRESS=$(forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/Escrow.sol:Escrow | jq -r .deployedTo)
-VERIFIER_CONTRACT_ADDRESS=$(forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/DummyVerifier.sol:DummyVerifier | jq -r .deployedTo)
-OP_CONSENSUS_STATE_MANAGER_ADDRESS=$(forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/OpConsensusStateManager.sol:OptimisticConsensusStateManager --constructor-args "100" "${ESCROW_CONTRACT_ADDRESS}" | jq -r .deployedTo)
-DISPATCHER_CONTRACT_ADDRESS=$(forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/Dispatcher.sol:Dispatcher --constructor-args "${VERIFIER_CONTRACT_ADDRESS}" "${ESCROW_CONTRACT_ADDRESS}" "${PORT_PREFIX}" "${OP_CONSENSUS_STATE_MANAGER_ADDRESS}" | jq -r .deployedTo)
-
-echo "{}" | jq ".polymer_escrow_address=\"${ESCROW_CONTRACT_ADDRESS}\" |
-    .polymer_verifier_address=\"${VERIFIER_CONTRACT_ADDRESS}\" |
-    .op_consensus_state_manager_address=\"${OP_CONSENSUS_STATE_MANAGER_ADDRESS}\" |
-    .polymer_dispatcher_address=\"${DISPATCHER_CONTRACT_ADDRESS}\"" | tee "${POLYMER_JSON}"
+pushd vibc-core-smart-contracts
+ESCROW_CONTRACT_ADDRESS="$(
+	forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/Escrow.sol:Escrow | \
+		jq -r .deployedTo
+)"
+VERIFIER_CONTRACT_ADDRESS="$(
+	forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/DummyVerifier.sol:DummyVerifier | \
+		jq -r .deployedTo
+)"
+OP_CONSENSUS_STATE_MANAGER_ADDRESS="$(
+	forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" \
+		 contracts/OpConsensusStateManager.sol:OptimisticConsensusStateManager \
+	   --constructor-args 100 "${ESCROW_CONTRACT_ADDRESS}" | \
+	jq -r .deployedTo
+)"
+DISPATCHER_CONTRACT_ADDRESS="$(
+	forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" \
+		contracts/Dispatcher.sol:Dispatcher --constructor-args "${VERIFIER_CONTRACT_ADDRESS}" \
+		"${ESCROW_CONTRACT_ADDRESS}" "${PORT_PREFIX}" "${OP_CONSENSUS_STATE_MANAGER_ADDRESS}" | \
+	jq -r .deployedTo
+)"
+RECEIVER_CONTRACT_ADDRESS="$(
+	forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/Mars.sol:Mars | \
+		jq -r .deployedTo
+)"
+jq -n \
+  --arg escrow "$ESCROW_CONTRACT_ADDRESS" \
+  --arg verifier "$VERIFIER_CONTRACT_ADDRESS" \
+  --arg op "$OP_CONSENSUS_STATE_MANAGER_ADDRESS" \
+  --arg dispatcher "$DISPATCHER_CONTRACT_ADDRESS" \
+  --arg receiver "$RECEIVER_CONTRACT_ADDRESS" \
+'{
+  polymer_escrow_address: $escrow,
+  polymer_verifier_address: $verifier,
+  op_consensus_state_manager_address: $op,
+  polymer_dispatcher_address: $dispatcher,
+  polymer_receiver_address: $receiver
+}' | tee "${POLYMER_JSON}"
