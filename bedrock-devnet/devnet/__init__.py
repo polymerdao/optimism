@@ -248,7 +248,7 @@ def devnet_deploy(paths):
     wait_up(9547)
     wait_for_rpc_server('127.0.0.1:9545')
     wait_for_rpc_server('127.0.0.1:9546')
-    wait_for_rpc_server('127.0.0.1:9547')
+    # wait_for_rpc_server('127.0.0.1:9547')
 
     # NOTE: temporary workaround for Peptide genesis hash issue
     run_command([
