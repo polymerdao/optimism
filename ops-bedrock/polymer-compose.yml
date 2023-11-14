@@ -91,7 +91,7 @@ services:
   op-peptide:
     depends_on:
       - op-peptide-init
-    image: peptide:devnet
+    image: ghcr.io/polymerdao/peptide:devnet-4
     ports:
       - '26657:26657'
       - '9547:8545'
@@ -423,7 +423,7 @@ services:
       - op-node-1
       - op-node-2
       - op-node-polymer
-    image: op-relayer:devnet
+    image: ghcr.io/polymerdao/op-relayer:devnet-4
     ports:
       - '4001:4001'
     environment:
