@@ -1,5 +1,5 @@
 # TODO update this to a public image
-FROM ghcr.io/polymerdao/peptide:devnet-4
+FROM ghcr.io/polymerdao/peptide:devnet-5
 
 RUN apk add --no-cache jq
 
