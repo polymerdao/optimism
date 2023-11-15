@@ -82,8 +82,7 @@ services:
       dockerfile: Dockerfile.peptide
     volumes:
       - 'l2_data_peptide:/root/.peptide'
-      - '${PWD}/../.devnet/config:/root/.peptide/config'
-      - '${PWD}/../.devnet/rollup.json:/rollup.json'
+      - '${PWD}/../.devnet/:/devnet'
     entrypoint:
       - '/bin/sh'
       - '/entrypoint.sh'
@@ -97,7 +96,6 @@ services:
       - '9547:8545'
     volumes:
       - 'l2_data_peptide:/root/.peptide'
-      - '${PWD}/../.devnet/config:/root/.peptide/config'
     command: >
       start
       --ee-http-server-address=0.0.0.0:8545

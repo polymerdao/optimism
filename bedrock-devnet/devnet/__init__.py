@@ -250,11 +250,6 @@ def devnet_deploy(paths):
     wait_for_rpc_server('127.0.0.1:9546')
     # wait_for_rpc_server('127.0.0.1:9547')
 
-    # NOTE: temporary workaround for Peptide genesis hash issue
-    run_command([
-         'ops-bedrock/fix-genesis-hash.sh'
-     ])
-
     l2_output_oracle = addresses['L2OutputOracleProxy']
     log.info(f'Using L2OutputOracle {l2_output_oracle}')
     batch_inbox_address = rollup_config['batch_inbox_address']
