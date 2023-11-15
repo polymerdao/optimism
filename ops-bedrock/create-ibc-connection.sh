@@ -15,6 +15,6 @@ fi
 
 RELAYER_ENDPOINT="${1}" # example localhost:4001
 CHAIN_ID="${2}"
-data="{\"chainID\":\"${CHAIN_ID}\"}\"
+data="{\"chainID\":\"${CHAIN_ID}\"}"
 
 curl "${RELAYER_ENDPOINT}/paths/op-polymer-1/createConnection" -d ${data}
