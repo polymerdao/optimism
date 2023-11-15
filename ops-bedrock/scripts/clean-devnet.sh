@@ -2,8 +2,10 @@
 
 # tear down the running devnet
 
-set -euo pipefail
+set -uo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 docker kill $(docker ps -a --filter name=^/ops-bedrock -q)
 docker volume rm $(docker volume ls --filter='name=ops-bedrock*' -q)
-rm -r .devnet
+rm -rf ${SCRIPT_DIR}/../../.devnet
