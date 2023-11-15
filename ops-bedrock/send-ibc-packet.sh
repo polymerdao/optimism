@@ -32,4 +32,4 @@ cast send --rpc-url "${RPC_ENDPOINT}" \
      "greet(address,string,bytes32,uint64,(uint256,uint256,uint256))" \
      "${dispatcher}" "${MESSAGE}" "${channel_bytes}" 1699392755000000000 "(0,0,0)"
 
-echo "Verify  transaction: cast tx ${tx_hash}"
+echo "Verify  transaction: cast tx <tx_hash>"
