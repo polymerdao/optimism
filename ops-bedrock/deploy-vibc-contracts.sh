@@ -4,28 +4,15 @@
 
 set -xeuo pipefail
 
-# $PWD is set by the caller python script
-cd "${PWD}"
-
-VIBC_VERSION='v0.0.14'
-CONTRACTS_DIR="vibc-core-smart-contracts"
 PRIVATE_KEY='bf7604d9d3a1c7748642b1b7b05c2bd219c9faa91458b370f85e5a40f3b03af7'
 
 RPC_URL="${1}"        # example: http://127.0.0.1:9545
 PORT_PREFIX="${2}"    # example: polyibc.op1
 POLYMER_JSON="${3}"   # example: polymer-l2-1.json
+CONTRACTS_DIR="${4}"  # packages/contracts-bedrock/lib/vibc-core-smart-contracts
 
-# download contracts if needed
-if [ ! -e "${CONTRACTS_DIR}" ]; then
-    git clone --depth 1 --branch "${VIBC_VERSION}" https://github.com/open-ibc/vibc-core-smart-contracts \
-    && pushd vibc-core-smart-contracts \
-    && git submodule update --init --recursive \
-    && npm install \
-    && popd
-fi
-
-# deploy contracts on OP chain 1
-pushd vibc-core-smart-contracts
+# deploy contracts
+pushd ${CONTRACTS_DIR}
 ESCROW_CONTRACT_ADDRESS="$(
 	forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/Escrow.sol:Escrow | \
 		jq -r .deployedTo
@@ -49,6 +36,9 @@ RECEIVER_CONTRACT_ADDRESS="$(
 	forge create --json --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY}" contracts/Mars.sol:Mars | \
 		jq -r .deployedTo
 )"
+popd
+
+# create json to store addresses
 jq -n \
   --arg escrow "$ESCROW_CONTRACT_ADDRESS" \
   --arg verifier "$VERIFIER_CONTRACT_ADDRESS" \

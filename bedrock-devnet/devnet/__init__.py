@@ -275,12 +275,11 @@ def devnet_deploy(paths):
         'deploy-vibc-contracts.sh',
         'http://127.0.0.1:9545',
         'polyibc.op1',
-        paths.polymer_l2_config_1
+        paths.polymer_l2_config_1,
+        pjoin(paths.contracts_bedrock_dir, 'lib/')
     ],
-    cwd=paths.ops_bedrock_dir,
-    env={
-        'PWD': paths.contracts_bedrock_dir
-    })
+    cwd=paths.contracts_bedrock_dir,
+   )
 
     # deploy Polymer contracts to L2-2
     log.info('Deploying Polymer VIBC contracts to L2-2')
@@ -289,12 +288,11 @@ def devnet_deploy(paths):
         'deploy-vibc-contracts.sh',
         'http://127.0.0.1:9546',
         'polyibc.op2',
-        paths.polymer_l2_config_2
+        paths.polymer_l2_config_2,
+        pjoin(paths.contracts_bedrock_dir, 'lib/')
     ],
-    cwd=paths.ops_bedrock_dir,
-    env={
-        'PWD': paths.contracts_bedrock_dir
-    })
+    cwd=paths.contracts_bedrock_dir,
+    )
 
     polymer_l2_config_1 = read_json(paths.polymer_l2_config_1)
     polymer_l2_config_2 = read_json(paths.polymer_l2_config_2)
