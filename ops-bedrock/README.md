@@ -1,6 +1,11 @@
 Devnet
 ======
 
+Init Contracts
+--------------
+`make build-ts`
+
+
 Setup
 -----
 `make devnet-up`
