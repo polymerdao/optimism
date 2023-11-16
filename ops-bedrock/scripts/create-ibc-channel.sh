@@ -16,7 +16,7 @@ fi
 RELAYER_ENDPOINT="${1}" # example localhost:4001
 POLYMER_L2_1_JSON="${2}"
 POLYMER_L2_2_JSON="${3}"
-ORDERING=1
+ORDERING=0
 
 receiverA="$( jq -r .polymer_receiver_address ${POLYMER_L2_1_JSON} )"
 receiverB="$( jq -r .polymer_receiver_address ${POLYMER_L2_2_JSON} )"

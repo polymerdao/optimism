@@ -19,9 +19,7 @@ IBC Setup
 
 Create IBC connections
 ----------------------
-`./scripts/create-ibc-connection.sh localhost:4001 901`
-
-`./scripts/create-ibc-connection.sh localhost:4001 902`
+`./scripts/create-ibc-connection.sh localhost:4001 901 902`
 
 Create IBC channel
 ------------------
