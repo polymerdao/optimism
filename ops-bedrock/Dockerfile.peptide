@@ -1,0 +1,8 @@
+# TODO update this to a public image
+FROM ghcr.io/polymerdao/peptide:devnet-5
+
+RUN apk add --no-cache jq
+
+COPY entrypoint-peptide.sh /entrypoint.sh
+
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]

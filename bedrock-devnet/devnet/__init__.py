@@ -80,7 +80,9 @@ def main():
       allocs_path=pjoin(devnet_dir, 'allocs-l1.json'),
       addresses_json_path=pjoin(devnet_dir, 'addresses.json'),
       sdk_addresses_json_path=pjoin(devnet_dir, 'sdk-addresses.json'),
-      rollup_config_path=pjoin(devnet_dir, 'rollup.json')
+      rollup_config_path=pjoin(devnet_dir, 'rollup.json'),
+      polymer_l2_config_1=pjoin(devnet_dir, 'polymer-l2-1.json'),
+      polymer_l2_config_2=pjoin(devnet_dir, 'polymer-l2-2.json')
     )
 
     if args.test:
@@ -95,7 +97,7 @@ def main():
         return
 
     log.info('Building docker images')
-    run_command(['docker', 'compose', 'build', '--progress', 'plain'], cwd=paths.ops_bedrock_dir, env={
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'build', '--progress', 'plain'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir
     })
 
@@ -198,7 +200,7 @@ def devnet_deploy(paths):
         ], cwd=paths.op_node_dir)
 
     log.info('Starting L1.')
-    run_command(['docker', 'compose', 'up', '-d', 'l1'], cwd=paths.ops_bedrock_dir, env={
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'l1'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir
     })
     wait_up(8545)
@@ -220,23 +222,71 @@ def devnet_deploy(paths):
     rollup_config = read_json(paths.rollup_config_path)
     addresses = read_json(paths.addresses_json_path)
 
-    log.info('Bringing up L2.')
-    run_command(['docker', 'compose', 'up', '-d', 'l2'], cwd=paths.ops_bedrock_dir, env={
+    log.info('Initialize Peptide')
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-peptide-init'],
+        cwd=paths.ops_bedrock_dir, env={
+            'PWD': paths.ops_bedrock_dir,
+    })
+
+    log.info('Bringing up L2 chains.')
+    # 'op-peptide'
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-geth-1', 'op-geth-2', 'op-peptide'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir
     })
     wait_up(9545)
+    wait_up(9546)
+    wait_up(9547)
     wait_for_rpc_server('127.0.0.1:9545')
+    wait_for_rpc_server('127.0.0.1:9546')
 
     l2_output_oracle = addresses['L2OutputOracleProxy']
     log.info(f'Using L2OutputOracle {l2_output_oracle}')
     batch_inbox_address = rollup_config['batch_inbox_address']
     log.info(f'Using batch inbox {batch_inbox_address}')
 
-    log.info('Bringing up everything else.')
-    run_command(['docker', 'compose', 'up', '-d', 'op-node', 'op-proposer', 'op-batcher'], cwd=paths.ops_bedrock_dir, env={
+    log.info('Bringing up rest of OP stack.')
+    run_command(['docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-node-1', 'op-proposer-1', 'op-batcher-1', 'op-node-2', 'op-proposer-2', 'op-batcher-2', 'op-node-polymer', 'op-proposer-polymer', 'op-batcher-polymer'], cwd=paths.ops_bedrock_dir, env={
         'PWD': paths.ops_bedrock_dir,
         'L2OO_ADDRESS': l2_output_oracle,
         'SEQUENCER_BATCH_INBOX_ADDRESS': batch_inbox_address
+    })
+
+    # deploy Polymer contracts to L2-1
+    log.info('Deploying Polymer VIBC contracts to L2-1')
+    run_command([
+        'sh',
+        'deploy-vibc-contracts.sh',
+        'http://127.0.0.1:9545',
+        'polyibc.op1',
+        paths.polymer_l2_config_1,
+        pjoin(paths.contracts_bedrock_dir, 'lib/vibc-core-smart-contracts')
+    ],
+    cwd=paths.ops_bedrock_dir,
+    )
+
+    # deploy Polymer contracts to L2-2
+    log.info('Deploying Polymer VIBC contracts to L2-2')
+    run_command([
+        'sh',
+        'deploy-vibc-contracts.sh',
+        'http://127.0.0.1:9546',
+        'polyibc.op2',
+        paths.polymer_l2_config_2,
+        pjoin(paths.contracts_bedrock_dir, 'lib/vibc-core-smart-contracts')
+    ],
+    cwd=paths.ops_bedrock_dir,
+    )
+
+    polymer_l2_config_1 = read_json(paths.polymer_l2_config_1)
+    polymer_l2_config_2 = read_json(paths.polymer_l2_config_2)
+
+    log.info('Bringing up op-relayer.')
+    run_command([
+        'docker', 'compose', '-f', 'polymer-compose.yml', 'up', '-d', 'op-relayer'
+    ], cwd=paths.ops_bedrock_dir, env={
+        'PWD': paths.ops_bedrock_dir,
+        'DISPATCHER_ADDRESS_1': polymer_l2_config_1["polymer_dispatcher_address"],
+        'DISPATCHER_ADDRESS_2': polymer_l2_config_2["polymer_dispatcher_address"]
     })
 
     log.info('Devnet ready.')
