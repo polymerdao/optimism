@@ -66,6 +66,7 @@ type Block struct {
 	ParentBlockHash common.Hash     `json:"parentHash"`
 	L1Txs           []Data          `json:"l1Txs"`
 	GasLimit        *hexutil.Uint64 `json:"gasLimit"`
+	PrevRandao      Bytes32         `json:"prevRandao"`
 }
 
 var _ BlockData = (*Block)(nil)
@@ -112,6 +113,7 @@ func (b *Block) ToExecutionPayload() (*ExecutionPayload, error) {
 		Timestamp:    hexutil.Uint64(b.Time()),
 		Transactions: b.L1Txs,
 		GasLimit:     *b.GasLimit,
+		PrevRandao:   b.PrevRandao,
 	}, nil
 }
 
