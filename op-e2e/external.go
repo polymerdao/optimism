@@ -6,11 +6,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/ethereum-optimism/optimism/op-e2e/config"
 	"github.com/ethereum-optimism/optimism/op-e2e/external"
+	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/params"
@@ -23,11 +25,25 @@ type ExternalRunner struct {
 	BinPath string
 	Genesis *core.Genesis
 	JWTPath string
+	L1      eth.BlockID
+	L2Time  uint64
 }
 
 type ExternalEthClient struct {
 	Session   *gexec.Session
 	Endpoints external.Endpoints
+}
+
+func (eec *ExternalEthClient) GenesisBlockHash() common.Hash {
+	return common.HexToHash(eec.Endpoints.GenesisBlockHash)
+}
+
+func (eec *ExternalEthClient) GenesisBlockHeight() uint64 {
+	height, err := strconv.ParseUint(eec.Endpoints.GenesisBlockHeight, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return height
 }
 
 func (eec *ExternalEthClient) HTTPEndpoint() string {
@@ -84,6 +100,9 @@ func (er *ExternalRunner) Run(t *testing.T) *ExternalEthClient {
 		GenesisPath:        filepath.Join(workDir, "genesis.json"),
 		EndpointsReadyPath: filepath.Join(workDir, "endpoints.json"),
 		Verbosity:          uint64(config.EthNodeVerbosity),
+		L1Hash:             er.L1.Hash.String(),
+		L1Height:           er.L1.Number,
+		L2Time:             er.L2Time,
 	}
 
 	err := os.Mkdir(config.DataDir, 0o700)
