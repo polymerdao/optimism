@@ -44,6 +44,7 @@ type L1BlockInfo struct {
 	BatcherAddr   common.Address
 	L1FeeOverhead eth.Bytes32
 	L1FeeScalar   eth.Bytes32
+	RootHash      common.Hash
 }
 
 // Binary Format
@@ -59,6 +60,7 @@ type L1BlockInfo struct {
 // | 32      | BatcherAddr              |
 // | 32      | L1FeeOverhead            |
 // | 32      | L1FeeScalar              |
+// | 32      | RootHash                 |
 // +---------+--------------------------+
 
 func (info *L1BlockInfo) MarshalBinary() ([]byte, error) {
@@ -88,6 +90,9 @@ func (info *L1BlockInfo) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 	if err := solabi.WriteEthBytes32(w, info.L1FeeScalar); err != nil {
+		return nil, err
+	}
+	if err := solabi.WriteHash(w, info.RootHash); err != nil {
 		return nil, err
 	}
 	return w.Bytes(), nil
@@ -127,6 +132,9 @@ func (info *L1BlockInfo) UnmarshalBinary(data []byte) error {
 	if info.L1FeeScalar, err = solabi.ReadEthBytes32(reader); err != nil {
 		return err
 	}
+	if info.RootHash, err = solabi.ReadHash(reader); err != nil {
+		return err
+	}
 	if !solabi.EmptyReader(reader) {
 		return errors.New("too many bytes")
 	}
@@ -152,6 +160,7 @@ func L1InfoDeposit(seqNumber uint64, block eth.BlockInfo, sysCfg eth.SystemConfi
 		BatcherAddr:    sysCfg.BatcherAddr,
 		L1FeeOverhead:  sysCfg.Overhead,
 		L1FeeScalar:    sysCfg.Scalar,
+		RootHash:       block.Root(),
 	}
 	data, err := infoDat.MarshalBinary()
 	if err != nil {
